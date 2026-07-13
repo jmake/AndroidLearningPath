@@ -50,8 +50,14 @@ setup_cmdline_tools()
 {
     ## Settings > Language and Frameworks > Android SDK > SDK Tools > command lines 
     export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin 
-    sdkmanager --version 
+    sdkmanager --version ## 21.0 
 
+    AAPT_EXE=$(find "$ANDROID_HOME/build-tools" -name aapt | sort -V | tail -1)
+    AAPT_VERSION=$(basename "$(dirname "$AAPT_EXE")")
+    echo "AAPT_VERSION:'$AAPT_VERSION'"  
+
+    export PATH="$ANDROID_HOME/build-tools/$AAPT_VERSION:$PATH"
+    apksigner --version ## 0.9 
 }
 
 setup_sdk()  
@@ -116,6 +122,43 @@ install_apk()
 
 }
 
+sign_apk() 
+{
+    APK=$(find . -name "*unsigned.apk" | head -1)
+    ALIAS="key_alias"
+    KEYSTORE="keystore_file.jks"
+    PASSWORD="password123"
+
+    if [ -z "$APK" ]; then
+        return
+    fi
+
+    if [ ! -f "$KEYSTORE" ]; then
+        keytool -genkeypair \
+            -v \
+            -keystore "$KEYSTORE" \
+            -alias "$ALIAS" \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass "$PASSWORD" \
+            -keypass "$PASSWORD" \
+            -dname "CN=SpicyTech"
+    fi
+
+    apksigner sign \
+        --ks "$KEYSTORE" \
+        --ks-key-alias "$ALIAS" \
+        --ks-pass pass:"$PASSWORD" \
+        --key-pass pass:"$PASSWORD" \
+        "$APK"
+
+    RELEASE_APK="$(dirname "$APK")/apk-release.apk"
+    mv "$APK" "$RELEASE_APK"
+    echo "'$RELEASE_APK' signed!!"
+
+}
+
 
 create_project_java_simplest() 
 {
@@ -164,11 +207,13 @@ create_project_android_simplest()
 
     ##git init 
     gradle wrapper
-    #./gradlew tasks 
+    ##./gradlew tasks --all | grep assemble
     ./gradlew assembleDebug
-    ##./gradlew uninstallRelease 
+    ./gradlew assembleRelease 
 
     #ls -la 
+    find . -name "*.apk"
+
 }
 
 
@@ -176,12 +221,6 @@ setup_sdk
 setup_gradle
 setup_cmdline_tools
 
-##rm -rf ~/.gradle/caches
-
-##key_create 
-#build_android
-#install_apk 
-
 
 create_project_android_simplest 
-
+sign_apk 
