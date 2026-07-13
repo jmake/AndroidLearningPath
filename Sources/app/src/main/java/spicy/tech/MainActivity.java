@@ -53,9 +53,9 @@ public class MainActivity extends Activity {
 
                 logger.append(
                         time + ";" +
-                                value1 + ";" +
-                                value2 + ";" +
-                                value3
+                        value1 + ";" +
+                        value2 + ";" +
+                        value3
                 );
 
                 row++;

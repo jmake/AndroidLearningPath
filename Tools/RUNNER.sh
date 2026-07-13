@@ -70,6 +70,21 @@ setup_sdk()
 }
 
 
+get_values_file() 
+{
+
+
+adb shell ls -R /sdcard/Download
+#adb shell ls -l /sdcard/Download
+
+rm -rf Download_1 
+adb pull /sdcard/Download Download_1
+ls Download_1
+
+    echo "..."
+}
+
+
 install_apk() 
 {
     AAPT_EXE=$(find "$ANDROID_HOME/build-tools" -name aapt | sort -V | tail -1)
@@ -183,5 +198,6 @@ setup_cmdline_tools
 #install_apk 
 
 
-create_project_android_simplest 
+#create_project_android_simplest 
 
+get_values_file 
