@@ -9,6 +9,9 @@ public class MainActivity extends Activity {
     private static final int CREATE_FILE_REQUEST = 100;
     private FileLogger logger;
 
+    private long time0;
+    private int row = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,8 +33,39 @@ public class MainActivity extends Activity {
         if (requestCode == CREATE_FILE_REQUEST && resultCode == RESULT_OK) {
             logger.setFileUri(data.getData());
 
-            logger.append("Logger started");
-            logger.append("Value: 123");
+            time0 = System.currentTimeMillis();
+
+            logger.append("time;value1;value2;value3");
+
+            startLogging();
         }
+    }
+
+    private void startLogging() {
+        new Thread(() -> {
+            while (true) {
+                long time = System.currentTimeMillis();
+                long value1 = time - time0;
+
+                int value2 = row;
+
+                double value3 = Math.sin(2.0 * Math.PI * value1 / 1000.0);
+
+                logger.append(
+                        time + ";" +
+                                value1 + ";" +
+                                value2 + ";" +
+                                value3
+                );
+
+                row++;
+
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+        }).start();
     }
 }

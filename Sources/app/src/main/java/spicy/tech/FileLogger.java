@@ -3,6 +3,7 @@ package spicy.tech;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -10,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 
 public class FileLogger
 {
+    private static final String TAG = "FileLogger";
+
     private Uri fileUri;
     private final Context context;
 
@@ -33,6 +36,8 @@ public class FileLogger
     }
 
     public void append(String text) {
+        Log.d(TAG, text);
+
         if (fileUri == null) {
             return;
         }
@@ -45,7 +50,7 @@ public class FileLogger
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Write error", e);
         }
     }
 
