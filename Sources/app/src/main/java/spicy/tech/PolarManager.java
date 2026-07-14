@@ -2,6 +2,7 @@ package spicy.tech;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -21,32 +22,46 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import kotlinx.coroutines.Dispatchers;
 import kotlinx.coroutines.rx3.RxConvertKt;
 
-public class PolarManager {
+public class PolarManager
+{
+    private static final String TAG = "PolarManager";
 
     private final PolarBleApi api;
     private Disposable hrDisposable;
+    //private final Context context;
 
-    public PolarManager(Context context) {
+    public PolarManager(Context context)
+    {
+        //this.context = context;
+        //Toast.makeText(context, "PolarManager", Toast.LENGTH_LONG).show();
+
         api = PolarBleApiDefaultImpl.defaultImplementation(
                 context,
                 EnumSet.allOf(PolarBleApi.PolarBleSdkFeature.class)
         );
 
-        api.setApiCallback(new PolarBleApiCallback() {
+        //api.setApiLogger { str: String -> Log.d("SDK", str) }
+
+        api.setApiCallback(new PolarBleApiCallback()
+        {
+
             @Override
             public void htsNotificationReceived(@NonNull String s, @NonNull PolarHealthThermometerData polarHealthThermometerData) {
 
             }
 
             @Override
-            public void deviceConnecting(@NonNull PolarDeviceInfo deviceInfo) {
-                System.out.println("Connecting: " + deviceInfo.getDeviceId());
+            public void deviceConnecting(@NonNull PolarDeviceInfo deviceInfo)
+            {
+                Log.d(TAG, "[deviceConnecting] " + deviceInfo.getDeviceId());
             }
 
             @Override
-            public void deviceConnected(@NonNull PolarDeviceInfo deviceInfo) {
-                System.out.println("Connected: " + deviceInfo.getDeviceId());
-                startHrStreaming(deviceInfo.getDeviceId());
+            public void deviceConnected(@NonNull PolarDeviceInfo deviceInfo)
+            {
+                Log.d(TAG, "[deviceConnected] " + deviceInfo.getDeviceId());
+                Toast.makeText(context, "Connected", Toast.LENGTH_SHORT).show();
+                startHrStreaming( deviceInfo.getDeviceId() );
             }
 
             @Override
@@ -56,13 +71,20 @@ public class PolarManager {
             }
 
             @Override
-            public void disInformationReceived(@NonNull String identifier, @NonNull DisInfo disInfo) {
+            public void disInformationReceived(@NonNull String identifier, @NonNull DisInfo disInfo)
+            {
                 System.out.println("Device info received: " + disInfo);
             }
         });
+
+        Log.d(TAG,"[PolarManager] ...");
+        Toast.makeText(context, "PolarManager...", Toast.LENGTH_LONG).show();
     }
 
-    private void startHrStreaming(String deviceId) {
+    private void startHrStreaming(String deviceId)
+    {
+        Log.d(TAG,"[startHrStreaming] ...");
+
         Observable<PolarHrData> hrObservable =
                 RxConvertKt.asObservable(api.startHrStreaming(deviceId), Dispatchers.getIO());
 
@@ -71,6 +93,7 @@ public class PolarManager {
                     if (!data.getSamples().isEmpty()) {
                         int hr = data.getSamples().get(0).getHr();
                         System.out.println("HR: " + hr);
+                        Log.d(TAG, "HR: " + hr);
                     }
                 },
                 throwable -> System.out.println("HR stream error: " + throwable.getMessage())
@@ -87,7 +110,7 @@ public class PolarManager {
         try {
             api.connectToDevice(deviceId);
         } catch (PolarInvalidArgument e) {
-            Log.e("PolarManager", "Invalid device ID: " + deviceId, e);
+            Log.e(TAG, "Invalid device ID: " + deviceId, e);
         }
     }
 
@@ -99,4 +122,6 @@ public class PolarManager {
         stopHrStreaming();
         api.shutDown();
     }
-}
+
+
+} // PolarManager
