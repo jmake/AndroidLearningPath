@@ -4,6 +4,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.polar.sdk.api.PolarBleApi;
+import com.polar.sdk.api.PolarBleApiDefaultImpl;
+import com.polar.sdk.api.PolarBleApiCallback;
+
 public class MainActivity extends Activity {
 
     private static final int CREATE_FILE_REQUEST = 100;

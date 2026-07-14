@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId "spicy.tech"
-        minSdk 24
+        minSdk 31
         targetSdk 36
         versionCode 1
         versionName "1.0"
@@ -31,6 +31,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+
 }
 
 dependencies {
@@ -41,4 +42,8 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.espresso.core
     androidTestImplementation libs.ext.junit
+
+    implementation 'com.github.polarofficial:polar-ble-sdk:8.1.0'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.10.2"
 }
