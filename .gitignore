@@ -1,3 +1,6 @@
 Sources/.gradle/
 Sources/.idea/
 Sources/build/
+/.idea
+Sources/local.properties
+Sources/local.properties
