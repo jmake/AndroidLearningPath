@@ -16,6 +16,8 @@ public class MainActivity extends Activity
     private static final int CREATE_FILE_REQUEST = 100;
 
     private TextView textViewBody = null;
+    private TextView textViewFooter = null;
+
     private FileLogger fileLogger = null;
     private PolarConnection polarConnection = null;
 
@@ -71,17 +73,19 @@ public class MainActivity extends Activity
     {
         setContentView( R.layout.activity_main );
 
-        String msg = "Ready ...";
-        textViewBody = findViewById(R.id.body_id);
-        textViewBody.setText(msg);
+        textViewBody = findViewById( R.id.body_id );
+        //String msg = "Ready ...";
+        //textViewBody.setText(msg);
+
+        textViewFooter = findViewById( R.id.footer_id );
     }
 
     private void LayoutSetText(String msg)
     {
         Log.d(TAG, "[" + TAG + "] " + msg);
 
-        if (textViewBody == null) return ;
-        textViewBody.setText( msg );
+        if (textViewFooter == null) return ;
+        textViewFooter.setText( msg );
     }
 
     // PolarConnection
@@ -89,8 +93,6 @@ public class MainActivity extends Activity
     {
         polarConnection = new PolarConnection(this);
         polarConnection.onCreate(textViewBody);
-
-        //LayoutSetText("PolarConnectionOnCreate");
     }
 
     private void PolarConnectionOnRequestPermissionsResult(
