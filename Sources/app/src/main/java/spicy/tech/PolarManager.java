@@ -15,6 +15,7 @@ import com.polar.sdk.api.model.PolarDeviceInfo;
 import com.polar.sdk.api.model.PolarHealthThermometerData;
 import com.polar.sdk.api.model.PolarHrData;
 import com.polar.sdk.api.errors.PolarInvalidArgument;
+import com.polar.sdk.api.model.PolarPpiData;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -28,11 +29,12 @@ import kotlinx.coroutines.rx3.RxConvertKt;
 public class PolarManager
 {
     private TextView textView = null;
-
     private static final String TAG = "PolarManager";
 
     private final PolarBleApi api;
+
     private Disposable hrDisposable;
+    private Disposable ppiDisposable;
     //private final Context context;
 
     private void LayoutSetText(String msg)
@@ -50,6 +52,37 @@ public class PolarManager
         String finalMsg = msg2;
         textView.post(() -> textView.setText(finalMsg));
 
+    }
+
+    public void connect(String deviceId, TextView textView)
+    {
+        this.textView = textView;
+
+        String msg = "";
+        msg += "[connect] deviceId:'" + deviceId + "'" ;
+        try
+        {
+            api.connectToDevice(deviceId);
+            msg += "good!!";
+        }
+        catch (PolarInvalidArgument e)
+        {
+            msg += "fail!!";
+        }
+
+        LayoutSetText( msg );
+    }
+
+    public void disconnect(String deviceId) throws PolarInvalidArgument
+    {
+        api.disconnectFromDevice(deviceId);
+    }
+
+    public void cleanup()
+    {
+        stopHrStreaming();
+        stopPpiStreaming();
+        api.shutDown();
     }
 
     public PolarManager(Context context)
@@ -91,8 +124,8 @@ public class PolarManager
             public void deviceConnected(@NonNull PolarDeviceInfo deviceInfo)
             {
                 LayoutSetText( "[deviceConnected] " + deviceInfo.getDeviceId() );
-                //Toast.makeText(context, "Connected", Toast.LENGTH_SHORT).show();
                 startHrStreaming( deviceInfo.getDeviceId() );
+                startPpiStreaming( deviceInfo.getDeviceId() );
             }
 
             @Override
@@ -100,6 +133,7 @@ public class PolarManager
             {
                 LayoutSetText( "[deviceDisconnected] " + deviceInfo.getDeviceId() );
                 stopHrStreaming();
+                stopPpiStreaming();
             }
 
             @Override
@@ -114,7 +148,6 @@ public class PolarManager
 
     private void startHrStreaming(String deviceId)
     {
-        //Log.d(TAG,"[startHrStreaming] ...");
         LayoutSetText("[startHrStreaming] ...");
 
         Observable<PolarHrData> hrObservable =
@@ -124,8 +157,11 @@ public class PolarManager
                 (PolarHrData data) -> {
                     if (!data.getSamples().isEmpty())
                     {
+                        Log.d(TAG, "[" + TAG + "] " + data.getSamples() );
+                        LayoutSetText( data.getSamples().toString() );
+
                         int hr = data.getSamples().get(0).getHr();
-                        LayoutSetText( "HR: " + hr );
+                        //LayoutSetText( "HR: " + hr );
                     }
                 },
                 throwable -> System.out.println("HR stream error: " + throwable.getMessage())
@@ -140,34 +176,30 @@ public class PolarManager
         }
     }
 
-    public void connect(String deviceId, TextView textView)
+    private void startPpiStreaming(String deviceId)
     {
-        this.textView = textView;
+        LayoutSetText("[startPpiStreaming] ...");
 
-        String msg = "";
-        msg += "[connect] deviceId:'" + deviceId + "'" ;
-        try
-        {
-            api.connectToDevice(deviceId);
-            msg += "good!!";
-        }
-        catch (PolarInvalidArgument e)
-        {
-            msg += "fail!!";
-        }
+        Observable<PolarPpiData> ppiObservable =
+                RxConvertKt.asObservable(api.startPpiStreaming(deviceId), Dispatchers.getIO());
 
-        LayoutSetText( msg );
+        ppiDisposable = ppiObservable.subscribe(
+                (PolarPpiData data) -> {
+                    if (!data.getSamples().isEmpty())
+                    {
+                        Log.d(TAG, "[" + TAG + "] " + data.getSamples());
+                    }
+                },
+                throwable -> System.out.println("PPI stream error: " + throwable.getMessage())
+        );
     }
 
-    public void disconnect(String deviceId) throws PolarInvalidArgument
+    private void stopPpiStreaming()
     {
-        api.disconnectFromDevice(deviceId);
-    }
-
-    public void cleanup()
-    {
-        stopHrStreaming();
-        api.shutDown();
+        if (ppiDisposable != null && !ppiDisposable.isDisposed())
+        {
+            ppiDisposable.dispose();
+        }
     }
 
 
