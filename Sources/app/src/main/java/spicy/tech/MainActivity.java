@@ -88,9 +88,9 @@ public class MainActivity extends Activity
     private void PolarConnectionOnCreate()
     {
         polarConnection = new PolarConnection(this);
-        polarConnection.onCreate();
+        polarConnection.onCreate(textView);
 
-        LayoutSetText("PolarConnectionOnCreate");
+        //LayoutSetText("PolarConnectionOnCreate");
     }
 
     private void PolarConnectionOnRequestPermissionsResult(
