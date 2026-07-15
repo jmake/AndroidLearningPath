@@ -15,7 +15,7 @@ public class MainActivity extends Activity
     private static final String TAG = "MainActivity";
     private static final int CREATE_FILE_REQUEST = 100;
 
-    private TextView textView = null;
+    private TextView textViewBody = null;
     private FileLogger fileLogger = null;
     private PolarConnection polarConnection = null;
 
@@ -72,23 +72,23 @@ public class MainActivity extends Activity
         setContentView( R.layout.activity_main );
 
         String msg = "Ready ...";
-        textView = findViewById(R.id.body_id);
-        textView.setText(msg);
+        textViewBody = findViewById(R.id.body_id);
+        textViewBody.setText(msg);
     }
 
     private void LayoutSetText(String msg)
     {
         Log.d(TAG, "[" + TAG + "] " + msg);
 
-        if (textView == null) return ;
-        textView.setText( msg );
+        if (textViewBody == null) return ;
+        textViewBody.setText( msg );
     }
 
     // PolarConnection
     private void PolarConnectionOnCreate()
     {
         polarConnection = new PolarConnection(this);
-        polarConnection.onCreate(textView);
+        polarConnection.onCreate(textViewBody);
 
         //LayoutSetText("PolarConnectionOnCreate");
     }
