@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -19,6 +20,8 @@ public class PolarConnection
     private static final String TAG = "PolarConnection";
     private static final int PERMISSION_REQUEST_CODE = 1001;
 
+    private TextView textView = null;
+
     /*
     python -m polar_python scan --json
     {
@@ -31,28 +34,42 @@ public class PolarConnection
     private PolarManager polarManager;
     private final Context context;
 
+    private void LayoutSetText(String msg)
+    {
+        Log.d(TAG, "[" + TAG + "] " + msg);
+
+        if (textView == null) return ;
+        textView.setText( msg );
+    }
+
     public PolarConnection(Context context)
     {
         this.context = context;
     }
 
-    protected void onCreate()
+    protected void onCreate(TextView textView)
     {
-        if (hasRequiredPermissions()) {
-            initPolarManager();
-        } else {
-            requestRequiredPermissions();
-        }
+        this.textView = textView ;
+        //textView = textView.findViewById(R.id.textView);
+
+        boolean requiredPermissions = hasRequiredPermissions();
+        LayoutSetText("requiredPermissions: '" + requiredPermissions + "' ");
+
+        if (requiredPermissions) { initPolarManager(); }
+        else { requestRequiredPermissions(); }
     }
 
     private boolean hasRequiredPermissions()
     {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+        {
             return ContextCompat.checkSelfPermission(this.context, Manifest.permission.BLUETOOTH_SCAN)
                     == PackageManager.PERMISSION_GRANTED
                     && ContextCompat.checkSelfPermission(this.context, Manifest.permission.BLUETOOTH_CONNECT)
                     == PackageManager.PERMISSION_GRANTED;
-        } else {
+        }
+        else
+        {
             return ContextCompat.checkSelfPermission(this.context, Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED;
         }
@@ -66,15 +83,16 @@ public class PolarConnection
         }
 
         String[] permissions;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+        {
             permissions = new String[]{
                     Manifest.permission.BLUETOOTH_SCAN,
                     Manifest.permission.BLUETOOTH_CONNECT
             };
-        } else {
-            permissions = new String[]{
-                    Manifest.permission.ACCESS_FINE_LOCATION
-            };
+        }
+        else
+        {
+            permissions = new String[]{ Manifest.permission.ACCESS_FINE_LOCATION };
         }
         ActivityCompat.requestPermissions((Activity) this.context, permissions, PERMISSION_REQUEST_CODE);
     }
@@ -83,10 +101,14 @@ public class PolarConnection
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults)
     {
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (hasRequiredPermissions()) {
+        if (requestCode == PERMISSION_REQUEST_CODE)
+        {
+            if (hasRequiredPermissions())
+            {
                 initPolarManager();
-            } else {
+            }
+            else
+            {
                 Log.e(TAG, "Required Bluetooth/location permissions were denied");
                 Toast.makeText(this.context, "Bluetooth permissions are required", Toast.LENGTH_LONG).show();
             }
@@ -97,16 +119,16 @@ public class PolarConnection
     {
         polarManager = new PolarManager(this.context);
         polarManager.connect(DEVICE_ID);
-        Log.d(TAG,"[initPolarManager] DEVICE_ID:" + DEVICE_ID);
+        LayoutSetText("initPolarManager :'" + DEVICE_ID + "' ");
     }
 
     protected void onDestroy() throws PolarInvalidArgument
     {
-        if (polarManager != null)
-        {
-            polarManager.disconnect(DEVICE_ID);
-            polarManager.cleanup();
-            Log.d(TAG,"[onDestroy] DEVICE_ID:" + DEVICE_ID);
-        }
+        if (polarManager == null) return ;
+
+        polarManager.disconnect(DEVICE_ID);
+        polarManager.cleanup();
+        //Log.d(TAG,"[onDestroy] DEVICE_ID:" + DEVICE_ID);
+        LayoutSetText("onDestroy :'" + DEVICE_ID + "' "); 
     }
 }
