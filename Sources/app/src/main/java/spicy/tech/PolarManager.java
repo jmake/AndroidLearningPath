@@ -42,7 +42,7 @@ public class PolarManager
         msg2 += msg;
         msg2 += "\n-------------";
 
-        Log.d(TAG, "[" + TAG + "] " + msg2);
+        Log.d(TAG, "[" + TAG + "] " + msg);
 
         if (textView == null) return ;
 
@@ -122,10 +122,10 @@ public class PolarManager
 
         hrDisposable = hrObservable.subscribe(
                 (PolarHrData data) -> {
-                    if (!data.getSamples().isEmpty()) {
+                    if (!data.getSamples().isEmpty())
+                    {
                         int hr = data.getSamples().get(0).getHr();
-                        System.out.println("HR: " + hr);
-                        Log.d(TAG, "HR: " + hr);
+                        LayoutSetText( "HR: " + hr );
                     }
                 },
                 throwable -> System.out.println("HR stream error: " + throwable.getMessage())
