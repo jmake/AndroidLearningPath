@@ -3,6 +3,7 @@ package spicy.tech;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -11,10 +12,12 @@ import com.polar.sdk.api.errors.PolarInvalidArgument;
 
 public class MainActivity extends Activity
 {
+    private static final String TAG = "MainActivity";
+    private static final int CREATE_FILE_REQUEST = 100;
+
     private TextView textView = null;
     private FileLogger fileLogger = null;
     private PolarConnection polarConnection = null;
-    private static final int CREATE_FILE_REQUEST = 100;
 
     private int row = 0;
     private long time0 = 0;
@@ -25,17 +28,11 @@ public class MainActivity extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView( R.layout.activity_main );
+        LayoutOnCreate();
 
-        String msg = "New text";
-        textView = findViewById( R.id.textView );
-        textView.setText( msg );
-
-        polarConnection = new PolarConnection(this);
-        polarConnection.onCreate();
-
-        fileLogger = new FileLogger(this);
-        startActivityForResult(fileLogger.createFilePickerIntent(), CREATE_FILE_REQUEST);
+        //LoggingThreadOnCreate();
+        PolarConnectionOnCreate();
+        LayoutSetText("onCreate");
     }
 
     @Override
@@ -43,17 +40,10 @@ public class MainActivity extends Activity
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (fileLogger != null)
+        if (requestCode == CREATE_FILE_REQUEST && resultCode == RESULT_OK && data != null)
         {
-            if (requestCode == CREATE_FILE_REQUEST && resultCode == RESULT_OK && data != null)
-            {
-                time0 = System.currentTimeMillis();
-                fileLogger.setFileUri(data.getData());
-                fileLogger.append("time;value1;value2;value3");
-                startLogging();
-            }
+            LoggingThreadOnActivityResult( data );
         }
-
     }
 
     @Override
@@ -65,10 +55,85 @@ public class MainActivity extends Activity
     {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (polarConnection != null) polarConnection.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        PolarConnectionOnRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    private void startLogging()
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        LoggingThreadOnDestroy();
+        PolarConnectionOnDestroy();
+    }
+
+    // Layout
+    private void LayoutOnCreate()
+    {
+        setContentView( R.layout.activity_main );
+
+        String msg = "Ready ...";
+        textView = findViewById(R.id.textView);
+        textView.setText(msg);
+    }
+
+    private void LayoutSetText(String msg)
+    {
+        Log.d(TAG, "[" + TAG + "] " + msg);
+
+        if (textView == null) return ;
+        textView.setText( msg );
+    }
+
+    // PolarConnection
+    private void PolarConnectionOnCreate()
+    {
+        polarConnection = new PolarConnection(this);
+        polarConnection.onCreate();
+    }
+
+    private void PolarConnectionOnRequestPermissionsResult(
+            int requestCode,
+            @NonNull String[] permissions,
+            @NonNull int[] grantResults
+    )
+    {
+        if (polarConnection == null) return ;
+
+        polarConnection.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    private void PolarConnectionOnDestroy()
+    {
+        if (polarConnection == null) return ;
+
+        try
+        {
+            polarConnection.onDestroy();
+        }
+        catch (PolarInvalidArgument e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // LoggingThread
+    private void LoggingThreadOnCreate()
+    {
+        fileLogger = new FileLogger(this);
+        startActivityForResult(fileLogger.createFilePickerIntent(), CREATE_FILE_REQUEST);
+    }
+
+    private void LoggingThreadOnActivityResult(Intent data)
+    {
+        if (fileLogger == null) return ;
+
+        time0 = System.currentTimeMillis();
+        fileLogger.setFileUri( data.getData() );
+        fileLogger.append("time;value1;value2;value3");
+        LoggingThreadStart();
+    }
+
+    private void LoggingThreadStart()
     {
         if (fileLogger == null) return ;
 
@@ -84,7 +149,7 @@ public class MainActivity extends Activity
                 double value3 = Math.sin(2.0 * Math.PI * value1 / 1000.0);
 
                 msg = time + ";" + value1 + ";" + value2 + ";" + value3;
-                textView.setText( msg );
+                //textView.setText( msg );
                 fileLogger.append( msg );
                 row++;
 
@@ -95,22 +160,12 @@ public class MainActivity extends Activity
         loggingThread.start();
     }
 
-    @Override
-    protected void onDestroy()
+    protected void LoggingThreadOnDestroy()
     {
-        super.onDestroy();
+        if (loggingThread == null) return ;
 
         logging = false;
-        if (loggingThread != null) loggingThread.interrupt();
-
-        try
-        {
-            if (polarConnection != null) polarConnection.onDestroy();
-        }
-        catch (PolarInvalidArgument e)
-        {
-            throw new RuntimeException(e);
-        }
-
+        loggingThread.interrupt();
     }
-}
+
+} // MainActivity
