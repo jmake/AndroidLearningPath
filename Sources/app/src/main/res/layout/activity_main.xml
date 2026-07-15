@@ -19,14 +19,18 @@
         android:layout_weight="1"
         android:text="Body"
         android:gravity="center"
-        android:background="#FFFFFFFF" />
+        android:textSize="16sp" 
+        android:background="#FFFFFFFF" 
+    />
 
     <TextView
         android:id="@+id/footer_id"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="80dp"
         android:text="Footer"
         android:gravity="center"
-        android:background="#FF0000FF" />
+        android:textSize="16sp"
+        android:background="#FF0000FF" 
+    />
 
 </LinearLayout>
