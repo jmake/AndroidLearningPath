@@ -29,10 +29,10 @@ public class MainActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         LayoutOnCreate();
+        LayoutSetText("onCreate");
 
         //LoggingThreadOnCreate();
         PolarConnectionOnCreate();
-        LayoutSetText("onCreate");
     }
 
     @Override
@@ -89,6 +89,8 @@ public class MainActivity extends Activity
     {
         polarConnection = new PolarConnection(this);
         polarConnection.onCreate();
+
+        LayoutSetText("PolarConnectionOnCreate");
     }
 
     private void PolarConnectionOnRequestPermissionsResult(
