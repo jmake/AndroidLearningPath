@@ -117,9 +117,10 @@ public class PolarConnection
 
     private void initPolarManager()
     {
-        polarManager = new PolarManager(this.context);
-        polarManager.connect(DEVICE_ID);
         LayoutSetText("initPolarManager :'" + DEVICE_ID + "' ");
+
+        polarManager = new PolarManager(this.context);
+        polarManager.connect(DEVICE_ID, textView);
     }
 
     protected void onDestroy() throws PolarInvalidArgument
