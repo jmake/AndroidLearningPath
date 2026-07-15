@@ -11,6 +11,7 @@ import com.polar.sdk.api.errors.PolarInvalidArgument;
 
 public class MainActivity extends Activity
 {
+    private TextView textView = null;
     private FileLogger fileLogger = null;
     private PolarConnection polarConnection = null;
     private static final int CREATE_FILE_REQUEST = 100;
@@ -27,7 +28,7 @@ public class MainActivity extends Activity
         setContentView( R.layout.activity_main );
 
         String msg = "New text";
-        TextView textView = findViewById( R.id.textView );
+        textView = findViewById( R.id.textView );
         textView.setText( msg );
 
         polarConnection = new PolarConnection(this);
@@ -74,21 +75,21 @@ public class MainActivity extends Activity
         logging = true;
         loggingThread = new Thread(() ->
         {
-            while (logging) {
+            String msg = "";
+            while (logging)
+            {
                 long time = System.currentTimeMillis();
                 long value1 = time - time0;
                 int value2 = row;
                 double value3 = Math.sin(2.0 * Math.PI * value1 / 1000.0);
 
-                fileLogger.append(time + ";" + value1 + ";" + value2 + ";" + value3);
+                msg = time + ";" + value1 + ";" + value2 + ";" + value3;
+                textView.setText( msg );
+                fileLogger.append( msg );
                 row++;
-                /*
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    return;
-                }
-                */
+
+                try { Thread.sleep(10); }
+                catch (InterruptedException e) {return;}
             }
         });
         loggingThread.start();
