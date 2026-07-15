@@ -72,7 +72,7 @@ public class MainActivity extends Activity
         setContentView( R.layout.activity_main );
 
         String msg = "Ready ...";
-        textView = findViewById(R.id.textView);
+        textView = findViewById(R.id.body_id);
         textView.setText(msg);
     }
 
