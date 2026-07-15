@@ -45,7 +45,11 @@ public class PolarManager
         Log.d(TAG, "[" + TAG + "] " + msg2);
 
         if (textView == null) return ;
-        textView.setText( msg2 );
+
+        //textView.setText( msg2 );
+        String finalMsg = msg2;
+        textView.post(() -> textView.setText(finalMsg));
+
     }
 
     public PolarManager(Context context)
