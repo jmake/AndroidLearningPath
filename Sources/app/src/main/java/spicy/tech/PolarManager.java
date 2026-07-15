@@ -37,10 +37,15 @@ public class PolarManager
 
     private void LayoutSetText(String msg)
     {
-        Log.d(TAG, "[" + TAG + "] " + msg);
+        String msg2 = "";
+        msg2 += "-------------\n";
+        msg2 += msg;
+        msg2 += "\n-------------";
+
+        Log.d(TAG, "[" + TAG + "] " + msg2);
 
         if (textView == null) return ;
-        textView.setText( msg );
+        textView.setText( msg2 );
     }
 
     public PolarManager(Context context)
