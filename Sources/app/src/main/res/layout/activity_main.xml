@@ -1,9 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:textSize="16sp" 
-    android:gravity="center"
-    android:text="Hello Android"
-    android:id="@+id/textView"
-/>
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/header_id"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:text="Header"
+        android:gravity="center"
+        android:background="#FF00FF00" />
+
+    <TextView
+        android:id="@+id/body_id"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="Body"
+        android:gravity="center"
+        android:background="#FFFFFFFF" />
+
+    <TextView
+        android:id="@+id/footer_id"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Footer"
+        android:gravity="center"
+        android:background="#FF0000FF" />
+
+</LinearLayout>
