@@ -10,6 +10,9 @@ import androidx.annotation.NonNull;
 
 import com.polar.sdk.api.errors.PolarInvalidArgument;
 
+import spicy.tech.polar.PolarConnection;
+import spicy.tech.tools.FileLogger;
+
 public class MainActivity extends Activity
 {
     private static final String TAG = "MainActivity";

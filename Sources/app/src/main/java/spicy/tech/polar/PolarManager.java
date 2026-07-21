@@ -1,9 +1,8 @@
-package spicy.tech;
+package spicy.tech.polar;
 
 import android.content.Context;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -18,7 +17,6 @@ import com.polar.sdk.api.errors.PolarInvalidArgument;
 import com.polar.sdk.api.model.PolarPpiData;
 
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashSet;
 
 import io.reactivex.rxjava3.core.Observable;

@@ -1,4 +1,4 @@
-package spicy.tech;
+package spicy.tech.polar;
 
 import android.Manifest;
 import android.app.Activity;
@@ -47,7 +47,7 @@ public class PolarConnection
         this.context = context;
     }
 
-    protected void onCreate(TextView textView)
+    public void onCreate(TextView textView)
     {
         this.textView = textView ;
         //textView = textView.findViewById(R.id.textView);
@@ -123,7 +123,7 @@ public class PolarConnection
         polarManager.connect(DEVICE_ID, textView);
     }
 
-    protected void onDestroy() throws PolarInvalidArgument
+    public void onDestroy() throws PolarInvalidArgument
     {
         if (polarManager == null) return ;
 

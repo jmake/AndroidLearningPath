@@ -23,7 +23,7 @@
         android:background="#FFFFFFFF" 
     />
 
-    <spicy.tech.GraphSurfaceView
+    <spicy.tech.plotter.GraphSurfaceView
         android:id="@+id/surface_id" 
         android:layout_width="match_parent"
         android:layout_height="0dp"

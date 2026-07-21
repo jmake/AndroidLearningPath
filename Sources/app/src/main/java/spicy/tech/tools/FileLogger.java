@@ -1,4 +1,4 @@
-package spicy.tech;
+package spicy.tech.tools;
 
 import android.content.Context;
 import android.content.Intent;
