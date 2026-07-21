@@ -1,5 +1,6 @@
 package spicy.tech.plotter;
 
+import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
@@ -91,7 +92,9 @@ class DrawThread extends Thread {
     }
 
     private void drawElapsedTime(Canvas canvas, float time) {
-        canvas.drawText(String.format("Time: %.1f s", time), 40, 60, timePaint);
+        @SuppressLint("DefaultLocale")
+        String msg = String.format("Time: %.1f s", time);
+        canvas.drawText(msg, 40, 60, timePaint);
     }
 
     private void drawGrid(Canvas canvas, float width, float height) {
