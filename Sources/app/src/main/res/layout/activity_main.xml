@@ -23,6 +23,14 @@
         android:background="#FFFFFFFF" 
     />
 
+    <spicy.tech.GraphSurfaceView
+        android:id="@+id/surface_id" 
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#5d00ffff" 
+    />
+
     <TextView
         android:id="@+id/footer_id"
         android:layout_width="match_parent"
