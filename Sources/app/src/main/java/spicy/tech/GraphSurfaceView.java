@@ -33,11 +33,13 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         getHolder().addCallback(this);
     }
 
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         thread = new DrawThread(holder);
         thread.start();
     }
+
 
     @Override
     public void surfaceChanged(
@@ -46,6 +48,7 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
             int width,
             int height) {
     }
+
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
@@ -70,7 +73,7 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
         private boolean running = true;
 
-        private float t = 0;
+        private float elapsedTime = 0;
 
 
         private final Paint signalPaint;
@@ -85,8 +88,8 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         private static final float Y_MIN = -1.2f;
         private static final float Y_MAX = 1.2f;
 
-        private static final float X_MIN = 0f;
-        private static final float X_MAX = 10f;
+
+        private static final float TIME_WINDOW = 10.0f;
 
         private static final int X_TICKS = 10;
 
@@ -95,11 +98,13 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
             this.holder = holder;
 
+
             signalPaint = createPaint(
                     Color.BLUE,
                     4,
                     Paint.Style.STROKE
             );
+
 
             axisPaint = createPaint(
                     Color.BLACK,
@@ -107,11 +112,13 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                     Paint.Style.STROKE
             );
 
+
             gridPaint = createPaint(
                     Color.GRAY,
                     1,
                     Paint.Style.STROKE
             );
+
 
             gridPaint.setPathEffect(
                     new DashPathEffect(
@@ -120,11 +127,13 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                     )
             );
 
+
             markerPaint = createPaint(
                     Color.RED,
                     2,
                     Paint.Style.STROKE
             );
+
 
             textPaint = createPaint(
                     Color.BLACK,
@@ -152,7 +161,7 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
                         drawFrame(canvas);
 
-                        t += 0.05f;
+                        elapsedTime += 0.016f;
                     }
 
                 } finally {
@@ -175,21 +184,64 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
             canvas.drawColor(Color.WHITE);
 
+
             float width = canvas.getWidth();
             float height = canvas.getHeight();
 
-            drawGrid(canvas, width, height);
-            drawAxis(canvas, width, height);
-            drawSignal(canvas, width, height);
-            drawCurrentMarker(canvas, width, height);
-            drawXLabels(canvas, width, height);
+
+            float xMin = elapsedTime - TIME_WINDOW;
+            float xMax = elapsedTime;
+
+
+            drawGrid(
+                    canvas,
+                    width,
+                    height,
+                    xMin,
+                    xMax
+            );
+
+
+            drawAxis(
+                    canvas,
+                    width,
+                    height
+            );
+
+
+            drawSignal(
+                    canvas,
+                    width,
+                    height,
+                    xMin,
+                    xMax
+            );
+
+
+            drawCurrentMarker(
+                    canvas,
+                    width,
+                    height,
+                    xMax
+            );
+
+
+            drawXLabels(
+                    canvas,
+                    width,
+                    height,
+                    xMin,
+                    xMax
+            );
         }
 
 
         private void drawGrid(
                 Canvas canvas,
                 float width,
-                float height) {
+                float height,
+                float xMin,
+                float xMax) {
 
 
             for (float y = Y_MIN; y <= Y_MAX; y += 0.2f) {
@@ -198,6 +250,7 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                         y,
                         height
                 );
+
 
                 canvas.drawLine(
                         0,
@@ -211,10 +264,11 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
             for (int i = 0; i <= X_TICKS; i++) {
 
-                float x = mapX(
-                        i,
-                        width
-                );
+                float x =
+                        i *
+                                width /
+                                X_TICKS;
+
 
                 canvas.drawLine(
                         x,
@@ -238,6 +292,7 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                     height
             );
 
+
             canvas.drawLine(
                     0,
                     zeroY,
@@ -245,6 +300,7 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                     zeroY,
                     axisPaint
             );
+
 
             canvas.drawLine(
                     0,
@@ -259,18 +315,22 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         private void drawSignal(
                 Canvas canvas,
                 float width,
-                float height) {
+                float height,
+                float xMin,
+                float xMax) {
 
 
             signalPath.reset();
 
 
-            for (int x = 0; x < width; x++) {
+            for (int pixel = 0; pixel < width; pixel++) {
+
 
                 float time =
-                        t +
-                                X_MIN +
-                                x / width * (X_MAX - X_MIN);
+                        xMin +
+                                pixel /
+                                        width *
+                                        (xMax - xMin);
 
 
                 float y =
@@ -284,14 +344,17 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                         );
 
 
-                if (x == 0) {
+                if (pixel == 0) {
+
                     signalPath.moveTo(
-                            x,
+                            pixel,
                             screenY
                     );
+
                 } else {
+
                     signalPath.lineTo(
-                            x,
+                            pixel,
                             screenY
                     );
                 }
@@ -308,20 +371,17 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         private void drawCurrentMarker(
                 Canvas canvas,
                 float width,
-                float height) {
+                float height,
+                float currentTime) {
 
 
-            float lastTime =
-                    t + X_MAX;
-
-
-            float lastY =
-                    (float) Math.sin(lastTime);
+            float y =
+                    (float) Math.sin(currentTime);
 
 
             float screenY =
                     mapY(
-                            lastY,
+                            y,
                             height
                     );
 
@@ -347,23 +407,24 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         private void drawXLabels(
                 Canvas canvas,
                 float width,
-                float height) {
+                float height,
+                float xMin,
+                float xMax) {
 
 
             for (int i = 0; i <= X_TICKS; i++) {
 
 
                 float x =
-                        mapX(
-                                i,
-                                width
-                        );
+                        i *
+                                width /
+                                X_TICKS;
 
 
                 float value =
-                        X_MIN +
+                        xMin +
                                 i *
-                                        (X_MAX - X_MIN)
+                                        (xMax - xMin)
                                         /
                                         X_TICKS;
 
@@ -378,19 +439,10 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         }
 
 
-        private float mapX(
-                int tick,
-                float width) {
-
-            return tick *
-                    width /
-                    X_TICKS;
-        }
-
-
         private float mapY(
                 float value,
                 float height) {
+
 
             return height -
                     ((value - Y_MIN)
