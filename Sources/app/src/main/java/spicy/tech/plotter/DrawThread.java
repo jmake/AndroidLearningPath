@@ -18,6 +18,7 @@ class DrawThread extends Thread {
     private final Paint markerPaint;
     private final Paint startPaint;
     private final Paint textPaint;
+    private final Paint timePaint;
     private final Path signalPath;
 
     private float elapsedTime = 0;
@@ -36,6 +37,7 @@ class DrawThread extends Thread {
         markerPaint = createPaint(Color.RED, 2, Paint.Style.STROKE);
         startPaint = createPaint(Color.GREEN, 2, Paint.Style.STROKE);
         textPaint = createPaint(Color.MAGENTA, 24, Paint.Style.FILL);
+        timePaint = createPaint(Color.MAGENTA, 48, Paint.Style.FILL);
         signalPath = new Path();
     }
 
@@ -85,6 +87,11 @@ class DrawThread extends Thread {
         drawStartLine(canvas, width, height, xMin, xMax);
         drawCurrentMarker(canvas, width, height, xMax);
         drawXLabels(canvas, width, height, xMin, xMax);
+        drawElapsedTime(canvas, elapsedTime);
+    }
+
+    private void drawElapsedTime(Canvas canvas, float time) {
+        canvas.drawText(String.format("Time: %.1f s", time), 40, 60, timePaint);
     }
 
     private void drawGrid(Canvas canvas, float width, float height) {
