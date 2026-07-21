@@ -136,8 +136,8 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
 
             textPaint = createPaint(
-                    Color.BLACK,
-                    28,
+                    Color.MAGENTA,
+                    24,
                     Paint.Style.FILL
             );
 
@@ -431,7 +431,7 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
                 canvas.drawText(
                         String.format("%.1f", value),
-                        x - 15,
+                        x - 36,
                         height - 10,
                         textPaint
                 );
@@ -455,18 +455,20 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
         private Paint createPaint(
                 int color,
-                float width,
+                float size,
                 Paint.Style style) {
-
 
             Paint paint = new Paint();
 
             paint.setAntiAlias(true);
             paint.setColor(color);
-            paint.setStrokeWidth(width);
+            paint.setStrokeWidth(size);
+            paint.setTextSize(size);
             paint.setStyle(style);
 
             return paint;
         }
+
     }
+
 }
