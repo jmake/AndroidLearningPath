@@ -21,18 +21,11 @@ public class PolarConnection
     private static final int PERMISSION_REQUEST_CODE = 1001;
 
     private TextView textView = null;
-
-    /*
-    python -m polar_python scan --json
-    {
-        "name": "Polar Sense 065AFD32",
-        "address": "24:AC:AC:06:5A:FD"
-    }
-    */
-    private static final String DEVICE_ID = "065AFD32";
+    private String deviceId;
 
     private PolarManager polarManager;
     private final Context context;
+    private ConnectionListener listener;
 
     private void LayoutSetText(String msg)
     {
@@ -47,10 +40,16 @@ public class PolarConnection
         this.context = context;
     }
 
+    public void setConnectionListener(ConnectionListener listener) {
+        this.listener = listener;
+        if (polarManager != null) {
+            polarManager.setConnectionListener(listener);
+        }
+    }
+
     public void onCreate(TextView textView)
     {
         this.textView = textView ;
-        //textView = textView.findViewById(R.id.textView);
 
         boolean requiredPermissions = hasRequiredPermissions();
         LayoutSetText("requiredPermissions: '" + requiredPermissions + "' ");
@@ -117,19 +116,34 @@ public class PolarConnection
 
     private void initPolarManager()
     {
-        LayoutSetText("initPolarManager :'" + DEVICE_ID + "' ");
+        if (polarManager == null) {
+            polarManager = new PolarManager(this.context);
+            if (listener != null) {
+                polarManager.setConnectionListener(listener);
+            }
+        }
+    }
 
-        polarManager = new PolarManager(this.context);
-        polarManager.connect(DEVICE_ID, textView);
+    public io.reactivex.rxjava3.core.Observable<com.polar.sdk.api.model.PolarDeviceInfo> searchForDevice() {
+        initPolarManager();
+        return polarManager.searchForDevice();
+    }
+
+    public void connectToSelectedDevice(String selectedDeviceId) {
+        this.deviceId = selectedDeviceId;
+        initPolarManager();
+        LayoutSetText("connectToSelectedDevice :'" + deviceId + "' ");
+        polarManager.connect(deviceId, textView);
     }
 
     public void onDestroy() throws PolarInvalidArgument
     {
         if (polarManager == null) return ;
 
-        polarManager.disconnect(DEVICE_ID);
+        if (deviceId != null) {
+            polarManager.disconnect(deviceId);
+        }
         polarManager.cleanup();
-        //Log.d(TAG,"[onDestroy] DEVICE_ID:" + DEVICE_ID);
-        LayoutSetText("onDestroy :'" + DEVICE_ID + "' "); 
+        LayoutSetText("onDestroy :'" + deviceId + "' "); 
     }
 }

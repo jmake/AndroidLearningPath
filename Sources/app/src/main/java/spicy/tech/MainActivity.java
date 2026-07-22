@@ -94,6 +94,9 @@ public class MainActivity extends Activity {
     private void PolarConnectionOnCreate() {
         polarConnection = new PolarConnection(this);
         polarConnection.onCreate(textViewBody);
+
+        android.widget.Button scanButton = findViewById(R.id.button_scan_id);
+        new spicy.tech.polar.PolarScannerUI(this, polarConnection, scanButton);
     }
 
     private void PolarConnectionOnRequestPermissionsResult(

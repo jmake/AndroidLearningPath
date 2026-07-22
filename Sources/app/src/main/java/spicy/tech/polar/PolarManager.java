@@ -31,6 +31,7 @@ public class PolarManager
 
     private final PolarBleApi api;
 
+    private ConnectionListener listener;
     private Disposable hrDisposable;
     private Disposable ppiDisposable;
     //private final Context context;
@@ -52,6 +53,14 @@ public class PolarManager
 
     }
 
+    public void setConnectionListener(ConnectionListener listener) {
+        this.listener = listener;
+    }
+
+    public io.reactivex.rxjava3.core.Observable<PolarDeviceInfo> searchForDevice() {
+        return kotlinx.coroutines.rx3.RxConvertKt.asObservable(api.searchForDevice(), kotlinx.coroutines.Dispatchers.getIO());
+    }
+
     public void connect(String deviceId, TextView textView)
     {
         this.textView = textView;
@@ -60,6 +69,7 @@ public class PolarManager
         msg += "[connect] deviceId:'" + deviceId + "'" ;
         try
         {
+            api.disconnectFromDevice(deviceId);
             api.connectToDevice(deviceId);
             msg += "good!!";
         }
@@ -124,6 +134,7 @@ public class PolarManager
                 LayoutSetText( "[deviceConnected] " + deviceInfo.getDeviceId() );
                 startHrStreaming( deviceInfo.getDeviceId() );
                 startPpiStreaming( deviceInfo.getDeviceId() );
+                if (listener != null) listener.onDeviceConnected();
             }
 
             @Override
@@ -132,6 +143,7 @@ public class PolarManager
                 LayoutSetText( "[deviceDisconnected] " + deviceInfo.getDeviceId() );
                 stopHrStreaming();
                 stopPpiStreaming();
+                if (listener != null) listener.onDeviceDisconnected();
             }
 
             @Override

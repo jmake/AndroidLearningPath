@@ -10,7 +10,17 @@
         android:layout_height="32dp"
         android:text="SpicyFit"
         android:gravity="center"
-        android:background="#FF00FF00" />
+        android:background="#FF00FF00" 
+    />
+
+
+    <Button
+        android:id="@+id/button_scan_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Scan Devices" 
+    />
+
 
     <TextView
         android:id="@+id/body_id"
