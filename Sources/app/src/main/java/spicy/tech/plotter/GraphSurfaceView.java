@@ -12,7 +12,7 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     private DrawThread thread;
     private ScaleGestureDetector scaleDetector;
 
-    //private FunctionView functionView = FunctionView.defaultFunction();
+    //private FunctionView functionView = new SimplestView();
     private FunctionView functionView = new SyntheticECGView();
 
     public GraphSurfaceView(Context context) {

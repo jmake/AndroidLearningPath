@@ -19,11 +19,11 @@ public class FunctionView {
         this.yMin = yMin;
         this.yMax = yMax;
     }
-
+/*
     public static FunctionView defaultFunction() {
-        return new FunctionView(x -> (float) Math.cos(3*x), -2.5f, 2.5f, Color.BLUE);
+        return null; //new FunctionView(x -> (float) Math.cos(3*x), -2.5f, 2.5f, Color.BLUE);
     }
-
+*/
     public float evaluate(float x) {
         return function.evaluate(x);
     }
