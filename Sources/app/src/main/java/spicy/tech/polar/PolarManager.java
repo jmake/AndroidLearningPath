@@ -252,13 +252,54 @@ public class PolarManager
                         {
                             List<PolarAccelerometerData.PolarAccelerometerDataSample> samples;
                             samples = data.getSamples();
+
                             if (!samples.isEmpty())
                             {
-                                Log.d(TAG, "[" + TAG + "] ACC H10: " + samples);
+                                //Log.d(TAG, "[" + TAG + "] ACC H10: " + samples);
+
+                                for (PolarAccelerometerData.PolarAccelerometerDataSample sample : samples)
+                                {
+                                    String msg = getAccelerometerDataSample(sample);
+                                    LayoutSetText(msg);
+                                }
+
                             }
+
                         },
                         throwable -> Log.e(TAG, "[" + TAG + "] ACC H10 stream error", throwable)
                 );
+    }
+
+    private Long firstAccTimestamp = null;
+
+    @androidx.annotation.NonNull
+    private String getAccelerometerDataSample(PolarAccelerometerData.PolarAccelerometerDataSample sample)
+    {
+        long timeStampNs = sample.getTimeStamp(); 
+        
+        if (firstAccTimestamp == null) {
+            firstAccTimestamp = timeStampNs; // Save the first timestamp
+        }
+
+        // 1. Relative Time (milliseconds since stream started)
+        long relativeTimeMs = (timeStampNs - firstAccTimestamp) / 1000000L;
+
+        // 2. Standard Unix Epoch (milliseconds since Jan 1, 1970)
+        // Offset from Jan 1 1970 to Jan 1 2000 is 946684800000 milliseconds
+        //long unixTimeMs = (timeStampNs / 1000000L) + 946684800000L;
+
+        int x = sample.getX();
+        int y = sample.getY();
+        int z = sample.getZ();
+
+        String msg = "ACC: ";
+        //msg += "Rel=" + relativeTimeMs + "ms, ";
+        //msg += "Unix=" + unixTimeMs + "ms [";
+        msg += "[" + relativeTimeMs / 1e3 + ", ";
+        msg += x + ",";
+        msg += y + ",";
+        msg += z + "]";
+        return msg;
     }
 
     private void startAccStreamingH10(String deviceId)
