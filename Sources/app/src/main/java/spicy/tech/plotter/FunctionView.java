@@ -15,9 +15,9 @@ public class FunctionView {
 
     public FunctionView(Function function, float yMin, float yMax, int color) {
         this.function = function;
+        this.color = color;
         this.yMin = yMin;
         this.yMax = yMax;
-        this.color = color;
     }
 
     public static FunctionView defaultFunction() {
