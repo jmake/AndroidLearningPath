@@ -235,26 +235,44 @@ public class PolarManager
         }
     }
 
+    private void startStreamWithSettingsH10(String deviceId, com.polar.sdk.api.model.PolarSensorSetting settings) {
+        accDisposable = kotlinx.coroutines.rx3.RxConvertKt.asObservable(
+                        api.startAccStreaming(deviceId, settings), 
+                        kotlinx.coroutines.Dispatchers.getIO()
+                ).subscribe(
+                        (com.polar.sdk.api.model.PolarAccelerometerData data) -> {
+                            if (!data.getSamples().isEmpty()) Log.d(TAG, "[" + TAG + "] ACC H10: " + data.getSamples());
+                        },
+                        throwable -> Log.e(TAG, "[" + TAG + "] ACC H10 stream error", throwable)
+                );
+    }
+
     private void startAccStreamingH10(String deviceId)
     {
         if (accDisposable != null && !accDisposable.isDisposed()) return;
-        LayoutSetText("[startAccStreamingH10] ...");
+        LayoutSetText("[startAccStreamingH10] Requesting...");
 
         try {
-            // H10: Using the empty map exactly as you requested (Option B)
-            com.polar.sdk.api.model.PolarSensorSetting manualSettings = 
-                    new com.polar.sdk.api.model.PolarSensorSetting(java.util.Collections.emptyMap());
+            Object res = api.requestStreamSettings(deviceId, com.polar.sdk.api.PolarBleApi.PolarDeviceDataType.ACC, new kotlin.coroutines.Continuation<com.polar.sdk.api.model.PolarSensorSetting>() {
+                @androidx.annotation.NonNull
+                @Override
+                public kotlin.coroutines.CoroutineContext getContext() {
+                    return kotlin.coroutines.EmptyCoroutineContext.INSTANCE;
+                }
 
-            accDisposable = kotlinx.coroutines.rx3.RxConvertKt.asObservable(
-                            api.startAccStreaming(deviceId, manualSettings), 
-                            kotlinx.coroutines.Dispatchers.getIO()
-                    ).subscribe(
-                            (com.polar.sdk.api.model.PolarAccelerometerData data) -> {
-                                if (!data.getSamples().isEmpty()) Log.d(TAG, "[" + TAG + "] ACC H10: " + data.getSamples());
-                            },
-                            throwable -> Log.e(TAG, "[" + TAG + "] ACC H10 stream error", throwable)
-                    );
-        } catch (Exception e) { Log.e(TAG, "Failed H10: " + e.getMessage()); }
+                @Override
+                public void resumeWith(@androidx.annotation.NonNull Object result) {
+                    if (result instanceof com.polar.sdk.api.model.PolarSensorSetting) {
+                        startStreamWithSettingsH10(deviceId, (com.polar.sdk.api.model.PolarSensorSetting) result);
+                    }
+                }
+            });
+
+            // If it returns synchronously
+            if (res instanceof com.polar.sdk.api.model.PolarSensorSetting) {
+                startStreamWithSettingsH10(deviceId, (com.polar.sdk.api.model.PolarSensorSetting) res);
+            }
+        } catch (Exception e) { Log.e(TAG, "Failed request: " + e.getMessage()); }
     }
 
     private void startAccStreamingSense(String deviceId)
