@@ -181,13 +181,13 @@ public class PolarManager
 
         hrDisposable = hrObservable.subscribe(
                 (PolarHrData data) -> {
-                    if (!data.getSamples().isEmpty())
-                    {
-                        //Log.d(TAG, "[" + TAG + "] " + data.getSamples() );
-                        //LayoutSetText( data.getSamples().toString() );
+                    List<PolarHrData.PolarHrSample> samples = data.getSamples();
+                    if (samples.isEmpty()) return;
 
-                        int hr = data.getSamples().get(0).getHr();
-                        //LayoutSetText( "HR: " + hr );
+                    for (PolarHrData.PolarHrSample sample : samples)
+                    {
+                        String msg = getHeartRateDataSample(sample);
+                        LayoutSetText(msg);
                     }
                 },
                 throwable -> System.out.println("HR stream error: " + throwable.getMessage())
@@ -270,35 +270,42 @@ public class PolarManager
                 );
     }
 
-    private Long firstAccTimestamp = null;
+    private Long firstAccTimestampNs = null;
+    private Long phoneTimeAtFirstAccMs = null; // Anchor point
 
     @androidx.annotation.NonNull
     private String getAccelerometerDataSample(PolarAccelerometerData.PolarAccelerometerDataSample sample)
     {
         long timeStampNs = sample.getTimeStamp(); 
         
-        if (firstAccTimestamp == null) {
-            firstAccTimestamp = timeStampNs; // Save the first timestamp
+        if (firstAccTimestampNs == null) {
+            firstAccTimestampNs = timeStampNs; 
+            phoneTimeAtFirstAccMs = System.currentTimeMillis(); // Create the anchor
         }
 
-        // 1. Relative Time (milliseconds since stream started)
-        long relativeTimeMs = (timeStampNs - firstAccTimestamp) / 1000000L;
-
-        // 2. Standard Unix Epoch (milliseconds since Jan 1, 1970)
-        // Offset from Jan 1 1970 to Jan 1 2000 is 946684800000 milliseconds
-        //long unixTimeMs = (timeStampNs / 1000000L) + 946684800000L;
+        long relativeTimeMs = (timeStampNs - firstAccTimestampNs) / 1000000L;
 
         int x = sample.getX();
         int y = sample.getY();
         int z = sample.getZ();
 
-        String msg = "ACC: ";
-        //msg += "Rel=" + relativeTimeMs + "ms, ";
-        //msg += "Unix=" + unixTimeMs + "ms [";
-        msg += "[" + relativeTimeMs / 1e3 + ", ";
-        msg += x + ",";
-        msg += y + ",";
-        msg += z + "]";
+        String msg = "ACC: [" + (relativeTimeMs / 1000.0) + ", " + x + "," + y + "," + z + "]";
+        return msg;
+    }
+
+    @androidx.annotation.NonNull
+    private String getHeartRateDataSample(PolarHrData.PolarHrSample sample)
+    {
+        long currentPhoneTimeMs = System.currentTimeMillis(); 
+        long relativeTimeMs = 0;
+
+        if (phoneTimeAtFirstAccMs != null) {
+            // Synchronize directly with the ACC timeline
+            relativeTimeMs = currentPhoneTimeMs - phoneTimeAtFirstAccMs;
+        }
+
+        int hr = sample.getHr();
+        String msg = "HR: [" + (relativeTimeMs / 1000.0) + ", " + hr + "]";
         return msg;
     }
 
