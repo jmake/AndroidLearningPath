@@ -19,6 +19,7 @@ import com.polar.sdk.api.model.PolarAccelerometerData;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -116,7 +117,8 @@ public class PolarManager
                         PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO
                 ))
         );
-        api.setApiLogger(this::LayoutSetText) ;
+
+        //api.setApiLogger(this::LayoutSetText) ;
 
         api.setApiCallback(new PolarBleApiCallback()
         {
@@ -181,8 +183,8 @@ public class PolarManager
                 (PolarHrData data) -> {
                     if (!data.getSamples().isEmpty())
                     {
-                        Log.d(TAG, "[" + TAG + "] " + data.getSamples() );
-                        LayoutSetText( data.getSamples().toString() );
+                        //Log.d(TAG, "[" + TAG + "] " + data.getSamples() );
+                        //LayoutSetText( data.getSamples().toString() );
 
                         int hr = data.getSamples().get(0).getHr();
                         //LayoutSetText( "HR: " + hr );
@@ -246,8 +248,14 @@ public class PolarManager
                         api.startAccStreaming(deviceId, settings), 
                         kotlinx.coroutines.Dispatchers.getIO()
                 ).subscribe(
-                        (com.polar.sdk.api.model.PolarAccelerometerData data) -> {
-                            if (!data.getSamples().isEmpty()) Log.d(TAG, "[" + TAG + "] ACC H10: " + data.getSamples());
+                        (com.polar.sdk.api.model.PolarAccelerometerData data) ->
+                        {
+                            List<PolarAccelerometerData.PolarAccelerometerDataSample> samples;
+                            samples = data.getSamples();
+                            if (!samples.isEmpty())
+                            {
+                                Log.d(TAG, "[" + TAG + "] ACC H10: " + samples);
+                            }
                         },
                         throwable -> Log.e(TAG, "[" + TAG + "] ACC H10 stream error", throwable)
                 );
