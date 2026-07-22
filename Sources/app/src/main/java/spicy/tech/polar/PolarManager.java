@@ -15,6 +15,7 @@ import com.polar.sdk.api.model.PolarHealthThermometerData;
 import com.polar.sdk.api.model.PolarHrData;
 import com.polar.sdk.api.errors.PolarInvalidArgument;
 import com.polar.sdk.api.model.PolarPpiData;
+import com.polar.sdk.api.model.PolarAccelerometerData;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -34,6 +35,8 @@ public class PolarManager
     private ConnectionListener listener;
     private Disposable hrDisposable;
     private Disposable ppiDisposable;
+    private Disposable accDisposable;
+    private String currentDeviceName = "";
     //private final Context context;
 
     private void LayoutSetText(String msg)
@@ -90,6 +93,7 @@ public class PolarManager
     {
         stopHrStreaming();
         stopPpiStreaming();
+        stopAccStreaming();
         api.shutDown();
     }
 
@@ -131,10 +135,19 @@ public class PolarManager
             @Override
             public void deviceConnected(@NonNull PolarDeviceInfo deviceInfo)
             {
+                currentDeviceName = deviceInfo.getName();
                 LayoutSetText( "[deviceConnected] " + deviceInfo.getDeviceId() );
                 startHrStreaming( deviceInfo.getDeviceId() );
                 startPpiStreaming( deviceInfo.getDeviceId() );
                 if (listener != null) listener.onDeviceConnected(deviceInfo.getName());
+            }
+
+            @Override
+            public void bleSdkFeatureReady(@NonNull String identifier, @NonNull com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature feature) {
+                if (feature == com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING) {
+                    LayoutSetText("[FeaturesReady] PMD streaming is ready for " + identifier);
+                    startAccStreaming(identifier, currentDeviceName);
+                }
             }
 
             @Override
@@ -143,6 +156,7 @@ public class PolarManager
                 LayoutSetText( "[deviceDisconnected] " + deviceInfo.getDeviceId() );
                 stopHrStreaming();
                 stopPpiStreaming();
+                stopAccStreaming();
                 if (listener != null) listener.onDeviceDisconnected();
             }
 
@@ -209,6 +223,73 @@ public class PolarManager
         if (ppiDisposable != null && !ppiDisposable.isDisposed())
         {
             ppiDisposable.dispose();
+        }
+    }
+
+    private void startAccStreaming(String deviceId, String deviceName)
+    {
+        if (deviceName != null && deviceName.contains("Sense")) {
+            startAccStreamingSense(deviceId);
+        } else {
+            startAccStreamingH10(deviceId);
+        }
+    }
+
+    private void startAccStreamingH10(String deviceId)
+    {
+        if (accDisposable != null && !accDisposable.isDisposed()) return;
+        LayoutSetText("[startAccStreamingH10] ...");
+
+        try {
+            // H10: Using the empty map exactly as you requested (Option B)
+            com.polar.sdk.api.model.PolarSensorSetting manualSettings = 
+                    new com.polar.sdk.api.model.PolarSensorSetting(java.util.Collections.emptyMap());
+
+            accDisposable = kotlinx.coroutines.rx3.RxConvertKt.asObservable(
+                            api.startAccStreaming(deviceId, manualSettings), 
+                            kotlinx.coroutines.Dispatchers.getIO()
+                    ).subscribe(
+                            (com.polar.sdk.api.model.PolarAccelerometerData data) -> {
+                                if (!data.getSamples().isEmpty()) Log.d(TAG, "[" + TAG + "] ACC H10: " + data.getSamples());
+                            },
+                            throwable -> Log.e(TAG, "[" + TAG + "] ACC H10 stream error", throwable)
+                    );
+        } catch (Exception e) { Log.e(TAG, "Failed H10: " + e.getMessage()); }
+    }
+
+    private void startAccStreamingSense(String deviceId)
+    {
+        if (accDisposable != null && !accDisposable.isDisposed()) return;
+        LayoutSetText("[startAccStreamingSense] ...");
+
+        try {
+            // Sense: RESTORED to the working map!
+            java.util.Map<com.polar.sdk.api.model.PolarSensorSetting.SettingType, Integer> settingsMap = new java.util.HashMap<>();
+            settingsMap.put(com.polar.sdk.api.model.PolarSensorSetting.SettingType.SAMPLE_RATE, 52);
+            settingsMap.put(com.polar.sdk.api.model.PolarSensorSetting.SettingType.RESOLUTION, 16);
+            settingsMap.put(com.polar.sdk.api.model.PolarSensorSetting.SettingType.RANGE, 8);
+            settingsMap.put(com.polar.sdk.api.model.PolarSensorSetting.SettingType.CHANNELS, 3);
+
+            com.polar.sdk.api.model.PolarSensorSetting manualSettings = 
+                    new com.polar.sdk.api.model.PolarSensorSetting(settingsMap);
+
+            accDisposable = kotlinx.coroutines.rx3.RxConvertKt.asObservable(
+                            api.startAccStreaming(deviceId, manualSettings), 
+                            kotlinx.coroutines.Dispatchers.getIO()
+                    ).subscribe(
+                            (com.polar.sdk.api.model.PolarAccelerometerData data) -> {
+                                if (!data.getSamples().isEmpty()) Log.d(TAG, "[" + TAG + "] ACC Sense: " + data.getSamples());
+                            },
+                            throwable -> Log.e(TAG, "[" + TAG + "] ACC Sense stream error", throwable)
+                    );
+        } catch (Exception e) { Log.e(TAG, "Failed Sense: " + e.getMessage()); }
+    }
+
+    private void stopAccStreaming()
+    {
+        if (accDisposable != null && !accDisposable.isDisposed())
+        {
+            accDisposable.dispose();
         }
     }
 
