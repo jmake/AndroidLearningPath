@@ -38,7 +38,9 @@ public class PolarManager
     private Disposable ppiDisposable;
     private Disposable accDisposable;
     private String currentDeviceName = "";
-    //private final Context context;
+    private final Context context;
+    private final PolarLogger accLogger = new PolarLogger();
+    private final PolarLogger hrLogger = new PolarLogger();
 
     private void LayoutSetText(String msg)
     {
@@ -92,15 +94,26 @@ public class PolarManager
 
     public void cleanup()
     {
+        stopLogging(); // Guarantee files are closed on app shutdown
         stopHrStreaming();
         stopPpiStreaming();
         stopAccStreaming();
         api.shutDown();
     }
 
+    public void startLogging(String baseFilename) {
+        accLogger.open(context, baseFilename + "_ACC");
+        hrLogger.open(context, baseFilename + "_HR");
+    }
+
+    public void stopLogging() {
+        accLogger.close();
+        hrLogger.close();
+    }
+
     public PolarManager(Context context)
     {
-        //this.context = context;
+        this.context = context;
         //Toast.makeText(context, "PolarManager", Toast.LENGTH_LONG).show();
         /*
         api = PolarBleApiDefaultImpl.defaultImplementation(
@@ -139,6 +152,20 @@ public class PolarManager
             {
                 currentDeviceName = deviceInfo.getName();
                 LayoutSetText( "[deviceConnected] " + deviceInfo.getDeviceId() );
+                
+                String sessionName = "Session_" + deviceInfo.getDeviceId();
+                startLogging(sessionName);
+                
+                // NEW LOGIC TO PRINT THE EXACT FULL PATH TO THE LOG AND SCREEN
+                java.io.File dir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS);
+                if (dir != null) {
+                    String basePath = dir.getAbsolutePath() + "/" + sessionName;
+                    LayoutSetText("Logging to: " + basePath + "_ACC.csv");
+                    LayoutSetText("Logging to: " + basePath + "_HR.csv");
+                    Log.d(TAG, "Logging to: " + basePath + "_ACC.csv");
+                    Log.d(TAG, "Logging to: " + basePath + "_HR.csv");
+                }
+
                 startHrStreaming( deviceInfo.getDeviceId() );
                 startPpiStreaming( deviceInfo.getDeviceId() );
                 if (listener != null) listener.onDeviceConnected(deviceInfo.getName());
@@ -156,6 +183,9 @@ public class PolarManager
             public void deviceDisconnected(@NonNull PolarDeviceInfo deviceInfo)
             {
                 LayoutSetText( "[deviceDisconnected] " + deviceInfo.getDeviceId() );
+                
+                stopLogging();
+                
                 stopHrStreaming();
                 stopPpiStreaming();
                 stopAccStreaming();
@@ -187,8 +217,11 @@ public class PolarManager
                     for (PolarHrData.PolarHrSample sample : samples)
                     {
                         String msg = getHeartRateDataSample(sample);
+                        hrLogger.writeLine(msg);
                         LayoutSetText(msg);
                     }
+                    hrLogger.flush();
+                    accLogger.flush(); // Forces ACC to also save to drive every second
                 },
                 throwable -> System.out.println("HR stream error: " + throwable.getMessage())
         );
@@ -260,9 +293,10 @@ public class PolarManager
                                 for (PolarAccelerometerData.PolarAccelerometerDataSample sample : samples)
                                 {
                                     String msg = getAccelerometerDataSample(sample);
+                                    accLogger.writeLine(msg);
                                     LayoutSetText(msg);
                                 }
-
+                                accLogger.flush();
                             }
 
                         },
@@ -358,7 +392,15 @@ public class PolarManager
                             kotlinx.coroutines.Dispatchers.getIO()
                     ).subscribe(
                             (com.polar.sdk.api.model.PolarAccelerometerData data) -> {
-                                if (!data.getSamples().isEmpty()) Log.d(TAG, "[" + TAG + "] ACC Sense: " + data.getSamples());
+                                List<PolarAccelerometerData.PolarAccelerometerDataSample> samples = data.getSamples();
+                                if (!samples.isEmpty()) {
+                                    for (PolarAccelerometerData.PolarAccelerometerDataSample sample : samples) {
+                                        String msg = getAccelerometerDataSample(sample);
+                                        accLogger.writeLine(msg);
+                                        LayoutSetText(msg);
+                                    }
+                                    accLogger.flush();
+                                }
                             },
                             throwable -> Log.e(TAG, "[" + TAG + "] ACC Sense stream error", throwable)
                     );
