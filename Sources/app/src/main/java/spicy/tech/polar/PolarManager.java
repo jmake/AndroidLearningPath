@@ -134,7 +134,7 @@ public class PolarManager
                 LayoutSetText( "[deviceConnected] " + deviceInfo.getDeviceId() );
                 startHrStreaming( deviceInfo.getDeviceId() );
                 startPpiStreaming( deviceInfo.getDeviceId() );
-                if (listener != null) listener.onDeviceConnected();
+                if (listener != null) listener.onDeviceConnected(deviceInfo.getName());
             }
 
             @Override

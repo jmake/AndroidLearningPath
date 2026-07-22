@@ -136,6 +136,16 @@ public class PolarConnection
         polarManager.connect(deviceId, textView);
     }
 
+    public void disconnect() {
+        if (polarManager != null && deviceId != null) {
+            try {
+                polarManager.disconnect(deviceId);
+            } catch (PolarInvalidArgument e) {
+                Log.e(TAG, "Disconnect error", e);
+            }
+        }
+    }
+
     public void onDestroy() throws PolarInvalidArgument
     {
         if (polarManager == null) return ;

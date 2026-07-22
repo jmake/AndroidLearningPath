@@ -14,6 +14,8 @@ public class PolarScannerUI implements ConnectionListener {
     private final PolarConnection polarConnection;
     private final Button scanButton;
     private static final String TAG = "PolarScannerUI";
+    private boolean isConnected = false;
+    private String connectedDeviceName = "";
 
     public PolarScannerUI(Activity activity, PolarConnection polarConnection, Button scanButton) {
         this.activity = activity;
@@ -27,13 +29,18 @@ public class PolarScannerUI implements ConnectionListener {
             android.widget.Toast.makeText(activity, "Button Clicked!", android.widget.Toast.LENGTH_SHORT).show();
             
             try {
-                setButtonState(false, Color.GRAY, "Scanning...");
-                startDeviceScan();
+                if (isConnected) {
+                    setButtonState(false, Color.GRAY, "Disconnecting...");
+                    polarConnection.disconnect();
+                } else {
+                    setButtonState(false, Color.GRAY, "Scanning...");
+                    startDeviceScan();
+                }
             } catch (Exception e) {
-                Log.e(TAG, "Exception during scan start", e);
+                Log.e(TAG, "Exception during scan/disconnect", e);
                 android.widget.Toast.makeText(activity, "Error: " + e.getMessage(), android.widget.Toast.LENGTH_LONG).show();
                 
-                setButtonState(true, Color.BLUE, "Scan Devices");
+                setButtonState(true, isConnected ? Color.RED : Color.BLUE, isConnected ? "Disconnect (" + connectedDeviceName + ")" : "Scan Devices");
             }
         });
     }
@@ -95,12 +102,15 @@ public class PolarScannerUI implements ConnectionListener {
     }
 
     @Override
-    public void onDeviceConnected() {
-        setButtonState(true, Color.GREEN, "Scan Again (Connected)");
+    public void onDeviceConnected(String deviceName) {
+        isConnected = true;
+        connectedDeviceName = deviceName;
+        setButtonState(true, Color.RED, "Disconnect (" + deviceName + ")");
     }
 
     @Override
     public void onDeviceDisconnected() {
+        isConnected = false;
         setButtonState(true, Color.BLUE, "Scan Devices");
     }
 }
