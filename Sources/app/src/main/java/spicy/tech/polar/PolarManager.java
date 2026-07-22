@@ -236,6 +236,8 @@ public class PolarManager
     }
 
     private void startStreamWithSettingsH10(String deviceId, com.polar.sdk.api.model.PolarSensorSetting settings) {
+        if (accDisposable != null && !accDisposable.isDisposed()) return;
+
         accDisposable = kotlinx.coroutines.rx3.RxConvertKt.asObservable(
                         api.startAccStreaming(deviceId, settings), 
                         kotlinx.coroutines.Dispatchers.getIO()
