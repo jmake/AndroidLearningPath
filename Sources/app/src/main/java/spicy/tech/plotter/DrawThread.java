@@ -50,6 +50,10 @@ class DrawThread extends Thread {
         return timeWindow;
     }
 
+    public synchronized void resetTime() {
+        elapsedTime = 0;
+    }
+
     @Override
     public void run() {
         while (running) {

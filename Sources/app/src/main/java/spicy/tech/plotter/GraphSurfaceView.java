@@ -75,4 +75,10 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
             thread = null;
         }
     }
+
+    public void resetGraph() {
+        if (thread != null) {
+            thread.resetTime();
+        }
+    }
 }
