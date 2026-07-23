@@ -9,11 +9,13 @@ import java.io.FileWriter;
 public class PolarLogger {
     private static final String TAG = "PolarLogger";
     private BufferedWriter writer;
+    private final StringBuilder sb = new StringBuilder(64); // Reusable memory block
 
     public void open(Context context, String filename) {
         try {
             File dir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS);
-            File file = new File(dir, filename + ".csv");
+            File file = new File(dir, filename + ".txt");
+            
             writer = new BufferedWriter(new FileWriter(file, false));
             Log.d(TAG, "Opened file: " + file.getAbsolutePath());
         } catch (Exception e) {
@@ -21,10 +23,16 @@ public class PolarLogger {
         }
     }
 
-    public void writeLine(String line) {
-        if (writer != null) {
+    public void writeArray(double[] data) {
+        if (writer != null && data != null) {
             try {
-                writer.write(line + "\n");
+                sb.setLength(0); // Wipe memory cleanly without creating new objects
+                for (int i = 0; i < data.length; i++) {
+                    sb.append(data[i]);
+                    if (i < data.length - 1) sb.append(", ");
+                }
+                sb.append("\n");
+                writer.write(sb.toString());
             } catch (Exception e) { }
         }
     }
