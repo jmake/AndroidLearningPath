@@ -153,17 +153,19 @@ public class PolarManager
                 currentDeviceName = deviceInfo.getName();
                 LayoutSetText( "[deviceConnected] " + deviceInfo.getDeviceId() );
                 
-                String sessionName = "Session_" + deviceInfo.getDeviceId();
+                String safeDeviceName = deviceInfo.getName().replace(" ", "_");
+                long currentTimestamp = System.currentTimeMillis();
+                String sessionName = safeDeviceName + "_" + currentTimestamp;
                 startLogging(sessionName);
                 
                 // NEW LOGIC TO PRINT THE EXACT FULL PATH TO THE LOG AND SCREEN
                 java.io.File dir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS);
                 if (dir != null) {
                     String basePath = dir.getAbsolutePath() + "/" + sessionName;
-                    LayoutSetText("Logging to: " + basePath + "_ACC.csv");
-                    LayoutSetText("Logging to: " + basePath + "_HR.csv");
-                    Log.d(TAG, "Logging to: " + basePath + "_ACC.csv");
-                    Log.d(TAG, "Logging to: " + basePath + "_HR.csv");
+                    LayoutSetText("Logging to: " + basePath + "_ACC.txt");
+                    LayoutSetText("Logging to: " + basePath + "_HR.txt");
+                    Log.d(TAG, "Logging to: " + basePath + "_ACC.txt");
+                    Log.d(TAG, "Logging to: " + basePath + "_HR.txt");
                 }
 
                 startHrStreaming( deviceInfo.getDeviceId() );
@@ -185,6 +187,9 @@ public class PolarManager
                 LayoutSetText( "[deviceDisconnected] " + deviceInfo.getDeviceId() );
                 
                 stopLogging();
+                
+                firstAccTimestampNs = null;
+                phoneTimeAtFirstAccMs = null;
                 
                 stopHrStreaming();
                 stopPpiStreaming();
@@ -216,14 +221,18 @@ public class PolarManager
 
                     for (PolarHrData.PolarHrSample sample : samples)
                     {
-                        String msg = getHeartRateDataSample(sample);
-                        hrLogger.writeLine(msg);
-                        LayoutSetText(msg);
+                        double[] sampleData = getHeartRateDataSample(sample);
+                        hrLogger.writeArray(sampleData);
+                        LayoutSetText(java.util.Arrays.toString(sampleData));
                     }
                     hrLogger.flush();
                     accLogger.flush(); // Forces ACC to also save to drive every second
                 },
-                throwable -> System.out.println("HR stream error: " + throwable.getMessage())
+                throwable -> {
+                    if (!throwable.toString().contains("BleDisconnected") && !throwable.toString().contains("CancellationException")) {
+                        Log.e(TAG, "[" + TAG + "] HR stream error", throwable);
+                    }
+                }
         );
     }
 
@@ -292,15 +301,19 @@ public class PolarManager
 
                                 for (PolarAccelerometerData.PolarAccelerometerDataSample sample : samples)
                                 {
-                                    String msg = getAccelerometerDataSample(sample);
-                                    accLogger.writeLine(msg);
-                                    LayoutSetText(msg);
+                                    double[] sampleData = getAccelerometerDataSample(sample);
+                                    accLogger.writeArray(sampleData);
+                                    LayoutSetText(java.util.Arrays.toString(sampleData));
                                 }
                                 accLogger.flush();
                             }
 
                         },
-                        throwable -> Log.e(TAG, "[" + TAG + "] ACC H10 stream error", throwable)
+                        throwable -> {
+                            if (!throwable.toString().contains("BleDisconnected") && !throwable.toString().contains("CancellationException")) {
+                                Log.e(TAG, "[" + TAG + "] ACC H10 stream error", throwable);
+                            }
+                        }
                 );
     }
 
@@ -308,7 +321,7 @@ public class PolarManager
     private Long phoneTimeAtFirstAccMs = null; // Anchor point
 
     @androidx.annotation.NonNull
-    private String getAccelerometerDataSample(PolarAccelerometerData.PolarAccelerometerDataSample sample)
+    private double[] getAccelerometerDataSample(PolarAccelerometerData.PolarAccelerometerDataSample sample)
     {
         long timeStampNs = sample.getTimeStamp(); 
         
@@ -317,18 +330,13 @@ public class PolarManager
             phoneTimeAtFirstAccMs = System.currentTimeMillis(); // Create the anchor
         }
 
-        long relativeTimeMs = (timeStampNs - firstAccTimestampNs) / 1000000L;
+        double relativeTimeSeconds = (timeStampNs - firstAccTimestampNs) / 1_000_000_000.0;
 
-        int x = sample.getX();
-        int y = sample.getY();
-        int z = sample.getZ();
-
-        String msg = "ACC: [" + (relativeTimeMs / 1000.0) + ", " + x + "," + y + "," + z + "]";
-        return msg;
+        return new double[]{ relativeTimeSeconds, sample.getX(), sample.getY(), sample.getZ() };
     }
 
     @androidx.annotation.NonNull
-    private String getHeartRateDataSample(PolarHrData.PolarHrSample sample)
+    private double[] getHeartRateDataSample(PolarHrData.PolarHrSample sample)
     {
         long currentPhoneTimeMs = System.currentTimeMillis(); 
         long relativeTimeMs = 0;
@@ -338,9 +346,9 @@ public class PolarManager
             relativeTimeMs = currentPhoneTimeMs - phoneTimeAtFirstAccMs;
         }
 
-        int hr = sample.getHr();
-        String msg = "HR: [" + (relativeTimeMs / 1000.0) + ", " + hr + "]";
-        return msg;
+        double relativeTimeSeconds = relativeTimeMs / 1000.0;
+
+        return new double[]{ relativeTimeSeconds, sample.getHr() };
     }
 
     private void startAccStreamingH10(String deviceId)
@@ -395,14 +403,18 @@ public class PolarManager
                                 List<PolarAccelerometerData.PolarAccelerometerDataSample> samples = data.getSamples();
                                 if (!samples.isEmpty()) {
                                     for (PolarAccelerometerData.PolarAccelerometerDataSample sample : samples) {
-                                        String msg = getAccelerometerDataSample(sample);
-                                        accLogger.writeLine(msg);
-                                        LayoutSetText(msg);
+                                        double[] sampleData = getAccelerometerDataSample(sample);
+                                        accLogger.writeArray(sampleData);
+                                        LayoutSetText(java.util.Arrays.toString(sampleData));
                                     }
                                     accLogger.flush();
                                 }
                             },
-                            throwable -> Log.e(TAG, "[" + TAG + "] ACC Sense stream error", throwable)
+                            throwable -> {
+                                if (!throwable.toString().contains("BleDisconnected") && !throwable.toString().contains("CancellationException")) {
+                                    Log.e(TAG, "[" + TAG + "] ACC Sense stream error", throwable);
+                                }
+                            }
                     );
         } catch (Exception e) { Log.e(TAG, "Failed Sense: " + e.getMessage()); }
     }
