@@ -96,11 +96,11 @@ public class MainActivity extends Activity {
                     toggleButton.setText("Toggle Graph: Math");
                     graphView.setFunctionView(new spicy.tech.plotter.SyntheticECGView());
                 } else if (graphState == 1) {
-                    toggleButton.setText("Toggle Graph: ACC");
-                    graphView.setFunctionView(polarConnection.getPolarManager().accBuffer.getAsFunctionView());
-                } else if (graphState == 2) {
                     toggleButton.setText("Toggle Graph: HR");
                     graphView.setFunctionView(polarConnection.getPolarManager().hrBuffer.getAsFunctionView());
+                } else if (graphState == 2) {
+                    toggleButton.setText("Toggle Graph: ACC");
+                    graphView.setFunctionView(polarConnection.getPolarManager().accBuffer.getAsFunctionView());
                 }
             } else {
                 graphState = 0;
@@ -132,23 +132,25 @@ public class MainActivity extends Activity {
         });
 
         android.widget.Button scanButton = findViewById(R.id.button_scan_id);
-        new spicy.tech.polar.PolarScannerUI(this, polarConnection, scanButton);
+        spicy.tech.polar.PolarScannerUI scannerUI = new spicy.tech.polar.PolarScannerUI(this, polarConnection, scanButton);
 
         polarConnection.setConnectionListener(new spicy.tech.polar.ConnectionListener() {
             @Override
             public void onDeviceConnected(String deviceName) {
+                scannerUI.onDeviceConnected(deviceName);
                 runOnUiThread(() -> {
                     graphState = 1;
                     android.widget.Button toggleButton = findViewById(R.id.button_toggle_graph);
-                    toggleButton.setText("Toggle Graph: ACC");
+                    toggleButton.setText("Toggle Graph: HR");
                     spicy.tech.plotter.GraphSurfaceView graphView = findViewById(R.id.surface_id);
-                    graphView.setFunctionView(polarConnection.getPolarManager().accBuffer.getAsFunctionView());
+                    graphView.setFunctionView(polarConnection.getPolarManager().hrBuffer.getAsFunctionView());
                     graphView.resetGraph();
                 });
             }
 
             @Override
             public void onDeviceDisconnected() {
+                scannerUI.onDeviceDisconnected();
                 runOnUiThread(() -> {
                     graphState = 0;
                     android.widget.Button toggleButton = findViewById(R.id.button_toggle_graph);
