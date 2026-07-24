@@ -21,6 +21,8 @@ public class PolarConnection
     private static final int PERMISSION_REQUEST_CODE = 1001;
 
     private TextView textView = null;
+    private TextView textViewAcc = null;
+    private TextView textViewHr = null;
     private String deviceId;
 
     private PolarManager polarManager;
@@ -51,9 +53,11 @@ public class PolarConnection
         return polarManager;
     }
 
-    public void onCreate(TextView textView)
+    public void onCreate(TextView textView, TextView textViewAcc, TextView textViewHr)
     {
         this.textView = textView ;
+        this.textViewAcc = textViewAcc;
+        this.textViewHr = textViewHr;
 
         boolean requiredPermissions = hasRequiredPermissions();
         LayoutSetText("requiredPermissions: '" + requiredPermissions + "' ");
@@ -137,7 +141,7 @@ public class PolarConnection
         this.deviceId = selectedDeviceId;
         initPolarManager();
         LayoutSetText("connectToSelectedDevice :'" + deviceId + "' ");
-        polarManager.connect(deviceId, textView);
+        polarManager.connect(deviceId, textView, textViewAcc, textViewHr);
     }
 
     public void disconnect() {

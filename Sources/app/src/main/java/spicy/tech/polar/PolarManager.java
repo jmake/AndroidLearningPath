@@ -29,6 +29,8 @@ import kotlinx.coroutines.rx3.RxConvertKt;
 public class PolarManager
 {
     private TextView textView = null;
+    private TextView textViewAcc = null;
+    private TextView textViewHr = null;
     private static final String TAG = "PolarManager";
 
     private final PolarBleApi api;
@@ -63,10 +65,21 @@ public class PolarManager
 
         if (textView == null) return ;
 
-        //textView.setText( msg2 );
         String finalMsg = msg2;
         textView.post(() -> textView.setText(finalMsg));
 
+    }
+    
+    private void LayoutSetTextAcc(String msg) {
+        if (textViewAcc != null) {
+            textViewAcc.post(() -> textViewAcc.setText("ACC: " + msg));
+        }
+    }
+
+    private void LayoutSetTextHr(String msg) {
+        if (textViewHr != null) {
+            textViewHr.post(() -> textViewHr.setText("HR: " + msg));
+        }
     }
 
     public void setConnectionListener(ConnectionListener listener) {
@@ -77,9 +90,11 @@ public class PolarManager
         return kotlinx.coroutines.rx3.RxConvertKt.asObservable(api.searchForDevice(), kotlinx.coroutines.Dispatchers.getIO());
     }
 
-    public void connect(String deviceId, TextView textView)
+    public void connect(String deviceId, TextView textView, TextView textViewAcc, TextView textViewHr)
     {
         this.textView = textView;
+        this.textViewAcc = textViewAcc;
+        this.textViewHr = textViewHr;
 
         String msg = "";
         msg += "[connect] deviceId:'" + deviceId + "'" ;
@@ -233,11 +248,14 @@ public class PolarManager
                     {
                         double[] sampleData = getHeartRateDataSample(sample);
                         hrLogger.writeArray(sampleData);
-LayoutSetText(java.util.Arrays.toString(sampleData)); // Bottleneck
+//LayoutSetText(java.util.Arrays.toString(sampleData)); // Bottleneck
 
                         float time = (float) sampleData[0];
                         float hr = (float) sampleData[1];
                         hrBuffer.addData(time, hr);
+                        
+                        // We only have 1 HR sample per batch typically, so print it directly
+                        LayoutSetTextHr(java.util.Arrays.toString(sampleData));
                     }
                     hrLogger.flush();
                     accLogger.flush(); // Forces ACC to also save to drive every second
@@ -326,7 +344,7 @@ LayoutSetText(java.util.Arrays.toString(sampleData)); // Bottleneck
                                     accBuffer.addData(time, magnitude);
                                 }
                                 if (lastSampleData != null) {
-                                    LayoutSetText(java.util.Arrays.toString(lastSampleData));
+                                    LayoutSetTextAcc(java.util.Arrays.toString(lastSampleData));
                                     if (drawListener != null) drawListener.requestDraw();
                                 }
                                 accLogger.flush();
@@ -437,7 +455,7 @@ LayoutSetText(java.util.Arrays.toString(sampleData)); // Bottleneck
                                         accBuffer.addData(time, magnitude);
                                     }
                                     if (lastSampleData != null) {
-                                        LayoutSetText(java.util.Arrays.toString(lastSampleData));
+                                        LayoutSetTextAcc(java.util.Arrays.toString(lastSampleData));
                                         if (drawListener != null) drawListener.requestDraw();
                                     }
                                     accLogger.flush();

@@ -121,7 +121,10 @@ public class MainActivity extends Activity {
     // PolarConnection
     private void PolarConnectionOnCreate() {
         polarConnection = new PolarConnection(this);
-        polarConnection.onCreate(textViewBody);
+        
+        TextView textViewAcc = findViewById(R.id.acc_text_id);
+        TextView textViewHr = findViewById(R.id.hr_text_id);
+        polarConnection.onCreate(textViewBody, textViewAcc, textViewHr);
         
         polarConnection.getPolarManager().setDrawListener(() -> {
             spicy.tech.plotter.GraphSurfaceView gv = findViewById(R.id.surface_id);
