@@ -68,8 +68,13 @@ class DrawThread extends Thread {
             try {
                 canvas = holder.lockCanvas();
                 if (canvas != null) {
+                    float latest = functionView.getLatestTime();
+                    if (latest >= 0f) {
+                        elapsedTime = latest;
+                    } else {
+                        elapsedTime += 0.016f;
+                    }
                     drawFrame(canvas);
-                    elapsedTime += 0.016f;
                 }
             } finally {
                 if (canvas != null) {
@@ -103,8 +108,9 @@ class DrawThread extends Thread {
     }
 
     private void drawElapsedTime(Canvas canvas, float time) {
+        float currentValue = functionView.evaluate(time);
         @SuppressLint("DefaultLocale")
-        String msg = String.format("Time: %.1f s", time);
+        String msg = String.format("%.1f s / % .2f", time, currentValue);
         canvas.drawText(msg, 40, 60, timePaint);
     }
 

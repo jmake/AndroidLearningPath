@@ -8,7 +8,12 @@ public class FunctionView {
         float evaluate(float x);
     }
 
+    public interface TimeProvider {
+        float getLatestTime();
+    }
+
     private final Function function;
+    private TimeProvider timeProvider = null;
     private final float yMin;
     private final float yMax;
     private final int color;
@@ -24,6 +29,17 @@ public class FunctionView {
         return null; //new FunctionView(x -> (float) Math.cos(3*x), -2.5f, 2.5f, Color.BLUE);
     }
 */
+    public void setTimeProvider(TimeProvider provider) {
+        this.timeProvider = provider;
+    }
+
+    public float getLatestTime() {
+        if (timeProvider != null) {
+            return timeProvider.getLatestTime();
+        }
+        return -1.0f; // -1 signals the DrawThread to use artificial time
+    }
+
     public float evaluate(float x) {
         return function.evaluate(x);
     }

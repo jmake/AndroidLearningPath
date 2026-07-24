@@ -74,7 +74,16 @@ public class DataBuffer {
         return closestValue;
     }
 
+    public synchronized float getLatestTime() {
+        if (size == 0) return 0f;
+        int latestIndex = head - 1;
+        if (latestIndex < 0) latestIndex = capacity - 1;
+        return times[latestIndex];
+    }
+
     public FunctionView getAsFunctionView() {
-        return new FunctionView(this::getValueAtTime, yMin, yMax, color);
+        FunctionView fv = new FunctionView(this::getValueAtTime, yMin, yMax, color);
+        fv.setTimeProvider(this::getLatestTime);
+        return fv;
     }
 }
