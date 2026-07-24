@@ -4,43 +4,51 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/header_id"
-        android:layout_width="match_parent"
-        android:layout_height="32dp"
-        android:text="SpicyFit"
-        android:gravity="center"
-        android:background="#FF00FF00" 
-    />
-
-
     <LinearLayout
+        android:id="@+id/group_header_id"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="0dp"
+        android:layout_weight="15"
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/button_scan_id"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="Scan Devices" 
+        <TextView
+            android:id="@+id/header_id"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:text="SpicyFit"
+            android:gravity="center"
+            android:background="#FF00FF00" 
         />
 
-        <Button
-            android:id="@+id/button_toggle_graph"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Toggle Graph: Math" 
-        />
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_scan_id"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Scan Devices" 
+            />
+
+            <Button
+                android:id="@+id/button_toggle_graph"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Toggle Graph: Math" 
+            />
+        </LinearLayout>
     </LinearLayout>
 
 
     <LinearLayout
+        android:id="@+id/group_concept2_id"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="35"
         android:orientation="vertical">
 
         <TextView
@@ -54,10 +62,27 @@
             android:background="#FFFFFFFF" 
         />
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/group_polar_id"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="35"
+        android:orientation="vertical">
+
+        <spicy.tech.plotter.GraphSurfaceView
+            android:id="@+id/surface_id" 
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="9"
+            android:background="#5d00ffff" 
+        />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="2"
+            android:layout_weight="1"
             android:orientation="horizontal">
 
             <TextView
@@ -77,33 +102,33 @@
                 android:gravity="center"
                 android:text="ACC Data"
             />
-
         </LinearLayout>
     </LinearLayout>
 
-    <spicy.tech.plotter.GraphSurfaceView
-        android:id="@+id/surface_id" 
+    <LinearLayout
+        android:id="@+id/group_footer_id"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="#5d00ffff" 
-    />
+        android:layout_weight="15"
+        android:orientation="vertical">
 
-    <Button
-        android:id="@+id/button_reset"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Reset Graph" 
-    />
+        <Button
+            android:id="@+id/button_reset"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Reset Graph" 
+        />
 
-    <TextView
-        android:id="@+id/footer_id"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:text="Footer"
-        android:gravity="center"
-        android:textSize="16sp"
-        android:background="#FF0000FF" 
-    />
+        <TextView
+            android:id="@+id/footer_id"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:text="Footer"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:background="#FF0000FF" 
+        />
+    </LinearLayout>
+
 
 </LinearLayout>
