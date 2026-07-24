@@ -40,7 +40,7 @@ public class FunctionView {
     }
 
     public void setTimeWindow(float timeWindow) {
-        this.timeWindow = Math.max(6.0f, Math.min(timeWindow, 720.0f));
+        this.timeWindow = Math.max(1.0f, Math.min(timeWindow, 720.0f));
     }
 
     public boolean isContinuous() {
