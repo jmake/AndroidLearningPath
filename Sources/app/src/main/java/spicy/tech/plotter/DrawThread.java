@@ -23,6 +23,7 @@ class DrawThread extends Thread {
     private final Path signalPath;
 
     private float elapsedTime = 0;
+    private float initialTimeWindow = -1f;
     boolean running = true;
     
     private final Object drawLock = new Object();
@@ -53,6 +54,7 @@ class DrawThread extends Thread {
 
     public synchronized void setFunctionView(FunctionView functionView) {
         this.functionView = functionView;
+        this.initialTimeWindow = -1f;
         if (signalPaint != null) {
             signalPaint.setColor(functionView.getColor());
         }
@@ -117,8 +119,10 @@ class DrawThread extends Thread {
         float height = canvas.getHeight();
         float xMin;
         float xMax;
+        float currentWindow = functionView != null ? functionView.getTimeWindow() : 10.0f;
         synchronized (this) {
-            xMin = elapsedTime - (functionView != null ? functionView.getTimeWindow() : 10.0f);
+            if (initialTimeWindow < 0) initialTimeWindow = currentWindow;
+            xMin = elapsedTime - currentWindow;
             xMax = elapsedTime;
         }
         drawGrid(canvas, width, height);
@@ -128,6 +132,7 @@ class DrawThread extends Thread {
         drawCurrentMarker(canvas, width, height, xMax);
         drawXLabels(canvas, width, height, xMin, xMax);
         drawElapsedTime(canvas, elapsedTime);
+        drawZoomFactor(canvas, width, currentWindow, initialTimeWindow);
     }
 
     private void drawElapsedTime(Canvas canvas, float time) {
@@ -137,8 +142,21 @@ class DrawThread extends Thread {
         canvas.drawText(msg, 40, 60, timePaint);
     }
 
+    private void drawZoomFactor(Canvas canvas, float width, float currentWindow, float initialWindow) {
+        if (initialWindow <= 0) return;
+        float zoom = initialWindow / currentWindow;
+        @SuppressLint("DefaultLocale")
+        String msg = String.format("x%.1f", zoom);
+        float textWidth = timePaint.measureText(msg);
+        canvas.drawText(msg, width - textWidth - 40, 60, timePaint);
+    }
+
     private void drawGrid(Canvas canvas, float width, float height) {
-        for (float y = functionView.getYMin(); y <= functionView.getYMax(); y += 0.2f) {
+        float yRange = functionView.getYMax() - functionView.getYMin();
+        float yStep = yRange / 10.0f;
+        if (yStep <= 0) yStep = 1.0f;
+
+        for (float y = functionView.getYMin(); y <= functionView.getYMax(); y += yStep) {
             float screenY = mapY(y, height);
             canvas.drawLine(0, screenY, width, screenY, gridPaint);
         }
