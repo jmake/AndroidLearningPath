@@ -47,6 +47,10 @@ public class PolarConnection
         }
     }
 
+    public PolarManager getPolarManager() {
+        return polarManager;
+    }
+
     public void onCreate(TextView textView)
     {
         this.textView = textView ;

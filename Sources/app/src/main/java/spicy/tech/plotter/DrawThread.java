@@ -11,7 +11,7 @@ import android.view.SurfaceHolder;
 class DrawThread extends Thread {
 
     private final SurfaceHolder holder;
-    private final FunctionView functionView;
+    private FunctionView functionView;
 
     private final Paint signalPaint;
     private final Paint axisPaint;
@@ -40,6 +40,13 @@ class DrawThread extends Thread {
         textPaint = createPaint(Color.MAGENTA, 24, Paint.Style.FILL);
         timePaint = createPaint(Color.MAGENTA, 48, Paint.Style.FILL);
         signalPath = new Path();
+    }
+
+    public synchronized void setFunctionView(FunctionView functionView) {
+        this.functionView = functionView;
+        if (signalPaint != null) {
+            signalPaint.setColor(functionView.getColor());
+        }
     }
 
     public synchronized void updateTimeWindow(float value) {

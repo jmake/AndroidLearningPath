@@ -42,6 +42,10 @@ public class PolarManager
     private final PolarLogger accLogger = new PolarLogger();
     private final PolarLogger hrLogger = new PolarLogger();
 
+    // Live data buffers for GraphSurfaceView
+    public final spicy.tech.plotter.DataBuffer accBuffer = new spicy.tech.plotter.DataBuffer("ACC", 200f, 1800, 0f, 3000f, android.graphics.Color.BLUE);
+    public final spicy.tech.plotter.DataBuffer hrBuffer = new spicy.tech.plotter.DataBuffer("HR", 1f, 1800, 40f, 200f, android.graphics.Color.RED);
+
     private void LayoutSetText(String msg)
     {
         String msg2 = "";
@@ -224,6 +228,10 @@ public class PolarManager
                         double[] sampleData = getHeartRateDataSample(sample);
                         hrLogger.writeArray(sampleData);
                         LayoutSetText(java.util.Arrays.toString(sampleData));
+                        
+                        float time = (float) sampleData[0];
+                        float hr = (float) sampleData[1];
+                        hrBuffer.addData(time, hr);
                     }
                     hrLogger.flush();
                     accLogger.flush(); // Forces ACC to also save to drive every second
@@ -304,6 +312,10 @@ public class PolarManager
                                     double[] sampleData = getAccelerometerDataSample(sample);
                                     accLogger.writeArray(sampleData);
                                     LayoutSetText(java.util.Arrays.toString(sampleData));
+                                    
+                                    float time = (float) sampleData[0];
+                                    float magnitude = (float) Math.sqrt(sampleData[1]*sampleData[1] + sampleData[2]*sampleData[2] + sampleData[3]*sampleData[3]);
+                                    accBuffer.addData(time, magnitude);
                                 }
                                 accLogger.flush();
                             }
@@ -406,6 +418,10 @@ public class PolarManager
                                         double[] sampleData = getAccelerometerDataSample(sample);
                                         accLogger.writeArray(sampleData);
                                         LayoutSetText(java.util.Arrays.toString(sampleData));
+                                        
+                                        float time = (float) sampleData[0];
+                                        float magnitude = (float) Math.sqrt(sampleData[1]*sampleData[1] + sampleData[2]*sampleData[2] + sampleData[3]*sampleData[3]);
+                                        accBuffer.addData(time, magnitude);
                                     }
                                     accLogger.flush();
                                 }

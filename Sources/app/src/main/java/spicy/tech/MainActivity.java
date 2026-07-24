@@ -33,6 +33,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         LayoutOnCreate();
         ResetButtonOnCreate();
+        ToggleButtonOnCreate();
         LayoutSetText("onCreate");
 
         // LoggingThreadOnCreate();
@@ -82,6 +83,33 @@ public class MainActivity extends Activity {
         resetButton.setOnClickListener(v -> graphView.resetGraph());
     }
 
+    private int graphState = 0;
+    private void ToggleButtonOnCreate() {
+        android.widget.Button toggleButton = findViewById(R.id.button_toggle_graph);
+        spicy.tech.plotter.GraphSurfaceView graphView = findViewById(R.id.surface_id);
+        
+        toggleButton.setOnClickListener(v -> {
+            graphState = (graphState + 1) % 3;
+            
+            if (polarConnection != null && polarConnection.getPolarManager() != null) {
+                if (graphState == 0) {
+                    toggleButton.setText("Toggle Graph: Math");
+                    graphView.setFunctionView(new spicy.tech.plotter.SyntheticECGView());
+                } else if (graphState == 1) {
+                    toggleButton.setText("Toggle Graph: ACC");
+                    graphView.setFunctionView(polarConnection.getPolarManager().accBuffer.getAsFunctionView());
+                } else if (graphState == 2) {
+                    toggleButton.setText("Toggle Graph: HR");
+                    graphView.setFunctionView(polarConnection.getPolarManager().hrBuffer.getAsFunctionView());
+                }
+            } else {
+                graphState = 0;
+                toggleButton.setText("Toggle Graph: Math (Connect Device First)");
+                graphView.setFunctionView(new spicy.tech.plotter.SyntheticECGView());
+            }
+        });
+    }
+
     private void LayoutSetText(String msg) {
         Log.d(TAG, "[" + TAG + "] " + msg);
 
@@ -97,6 +125,31 @@ public class MainActivity extends Activity {
 
         android.widget.Button scanButton = findViewById(R.id.button_scan_id);
         new spicy.tech.polar.PolarScannerUI(this, polarConnection, scanButton);
+
+        polarConnection.setConnectionListener(new spicy.tech.polar.ConnectionListener() {
+            @Override
+            public void onDeviceConnected(String deviceName) {
+                runOnUiThread(() -> {
+                    graphState = 1;
+                    android.widget.Button toggleButton = findViewById(R.id.button_toggle_graph);
+                    toggleButton.setText("Toggle Graph: ACC");
+                    spicy.tech.plotter.GraphSurfaceView graphView = findViewById(R.id.surface_id);
+                    graphView.setFunctionView(polarConnection.getPolarManager().accBuffer.getAsFunctionView());
+                    graphView.resetGraph();
+                });
+            }
+
+            @Override
+            public void onDeviceDisconnected() {
+                runOnUiThread(() -> {
+                    graphState = 0;
+                    android.widget.Button toggleButton = findViewById(R.id.button_toggle_graph);
+                    toggleButton.setText("Toggle Graph: Math");
+                    spicy.tech.plotter.GraphSurfaceView graphView = findViewById(R.id.surface_id);
+                    graphView.setFunctionView(new spicy.tech.plotter.SyntheticECGView());
+                });
+            }
+        });
     }
 
     private void PolarConnectionOnRequestPermissionsResult(

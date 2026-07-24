@@ -11,7 +11,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "spicy.tech"
+        applicationId "spicy.tech.v2"
         minSdk 31
         targetSdk 36
         versionCode 1

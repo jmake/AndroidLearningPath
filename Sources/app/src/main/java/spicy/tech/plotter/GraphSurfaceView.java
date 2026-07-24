@@ -32,6 +32,9 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
     public void setFunctionView(FunctionView functionView) {
         this.functionView = functionView;
+        if (thread != null) {
+            thread.setFunctionView(functionView);
+        }
     }
 
     private void init() {
