@@ -131,7 +131,7 @@ public class MainActivity extends Activity {
             if (gv != null) gv.requestDraw();
         });
 
-        android.widget.Button scanButton = findViewById(R.id.button_scan_id);
+        android.widget.Button scanButton = findViewById(R.id.polar_scan_id);
         spicy.tech.polar.PolarScannerUI scannerUI = new spicy.tech.polar.PolarScannerUI(this, polarConnection, scanButton);
 
         polarConnection.setConnectionListener(new spicy.tech.polar.ConnectionListener() {
