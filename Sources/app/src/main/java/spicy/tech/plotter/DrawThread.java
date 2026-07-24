@@ -144,11 +144,11 @@ class DrawThread extends Thread {
 
     private void drawZoomFactor(Canvas canvas, float width, float currentWindow, float initialWindow) {
         if (initialWindow <= 0) return;
-        float zoom = currentWindow / initialWindow;
+        float zoom = initialWindow / currentWindow;
         @SuppressLint("DefaultLocale")
         String msg = String.format("x%.1f", zoom);
         Paint zoomPaint = new Paint(timePaint);
-        zoomPaint.setColor(Color.WHITE);
+        zoomPaint.setColor(Color.GREEN);
         float textWidth = zoomPaint.measureText(msg);
         canvas.drawText(msg, width - textWidth - 40, 60, zoomPaint);
     }
