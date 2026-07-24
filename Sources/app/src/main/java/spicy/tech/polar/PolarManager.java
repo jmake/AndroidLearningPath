@@ -45,6 +45,12 @@ public class PolarManager
     // Live data buffers for GraphSurfaceView
     public final spicy.tech.plotter.DataBuffer accBuffer = new spicy.tech.plotter.DataBuffer("ACC", 200f, 1800, 0f, 3000f, android.graphics.Color.BLUE);
     public final spicy.tech.plotter.DataBuffer hrBuffer = new spicy.tech.plotter.DataBuffer("HR", 1f, 1800, 40f, 200f, android.graphics.Color.RED);
+    
+    public interface DrawListener {
+        void requestDraw();
+    }
+    private DrawListener drawListener;
+    public void setDrawListener(DrawListener listener) { this.drawListener = listener; }
 
     private void LayoutSetText(String msg)
     {
@@ -227,14 +233,15 @@ public class PolarManager
                     {
                         double[] sampleData = getHeartRateDataSample(sample);
                         hrLogger.writeArray(sampleData);
-                        LayoutSetText(java.util.Arrays.toString(sampleData));
-                        
+LayoutSetText(java.util.Arrays.toString(sampleData)); // Bottleneck
+
                         float time = (float) sampleData[0];
                         float hr = (float) sampleData[1];
                         hrBuffer.addData(time, hr);
                     }
                     hrLogger.flush();
                     accLogger.flush(); // Forces ACC to also save to drive every second
+                    if (drawListener != null) drawListener.requestDraw();
                 },
                 throwable -> {
                     if (!throwable.toString().contains("BleDisconnected") && !throwable.toString().contains("CancellationException")) {
@@ -307,15 +314,20 @@ public class PolarManager
                             {
                                 //Log.d(TAG, "[" + TAG + "] ACC H10: " + samples);
 
+                                double[] lastSampleData = null;
                                 for (PolarAccelerometerData.PolarAccelerometerDataSample sample : samples)
                                 {
                                     double[] sampleData = getAccelerometerDataSample(sample);
                                     accLogger.writeArray(sampleData);
-                                    LayoutSetText(java.util.Arrays.toString(sampleData));
+                                    lastSampleData = sampleData;
                                     
                                     float time = (float) sampleData[0];
                                     float magnitude = (float) Math.sqrt(sampleData[1]*sampleData[1] + sampleData[2]*sampleData[2] + sampleData[3]*sampleData[3]);
                                     accBuffer.addData(time, magnitude);
+                                }
+                                if (lastSampleData != null) {
+                                    LayoutSetText(java.util.Arrays.toString(lastSampleData));
+                                    if (drawListener != null) drawListener.requestDraw();
                                 }
                                 accLogger.flush();
                             }
@@ -414,14 +426,19 @@ public class PolarManager
                             (com.polar.sdk.api.model.PolarAccelerometerData data) -> {
                                 List<PolarAccelerometerData.PolarAccelerometerDataSample> samples = data.getSamples();
                                 if (!samples.isEmpty()) {
+                                    double[] lastSampleData = null;
                                     for (PolarAccelerometerData.PolarAccelerometerDataSample sample : samples) {
                                         double[] sampleData = getAccelerometerDataSample(sample);
                                         accLogger.writeArray(sampleData);
-                                        LayoutSetText(java.util.Arrays.toString(sampleData));
+                                        lastSampleData = sampleData;
                                         
                                         float time = (float) sampleData[0];
                                         float magnitude = (float) Math.sqrt(sampleData[1]*sampleData[1] + sampleData[2]*sampleData[2] + sampleData[3]*sampleData[3]);
                                         accBuffer.addData(time, magnitude);
+                                    }
+                                    if (lastSampleData != null) {
+                                        LayoutSetText(java.util.Arrays.toString(lastSampleData));
+                                        if (drawListener != null) drawListener.requestDraw();
                                     }
                                     accLogger.flush();
                                 }

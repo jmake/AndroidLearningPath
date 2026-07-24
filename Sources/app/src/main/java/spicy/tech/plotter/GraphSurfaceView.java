@@ -34,6 +34,7 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         this.functionView = functionView;
         if (thread != null) {
             thread.setFunctionView(functionView);
+            thread.requestDraw();
         }
     }
 
@@ -45,6 +46,7 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                 if (thread != null) {
                     float factor = detector.getScaleFactor();
                     thread.updateTimeWindow(thread.getTimeWindow() / factor);
+                    thread.requestDraw();
                 }
                 return true;
             }
@@ -82,6 +84,13 @@ public class GraphSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     public void resetGraph() {
         if (thread != null) {
             thread.resetTime();
+            thread.requestDraw();
+        }
+    }
+    
+    public void requestDraw() {
+        if (thread != null) {
+            thread.requestDraw();
         }
     }
 }

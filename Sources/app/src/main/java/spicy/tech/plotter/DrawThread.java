@@ -24,6 +24,16 @@ class DrawThread extends Thread {
 
     private float elapsedTime = 0;
     boolean running = true;
+    
+    private final Object drawLock = new Object();
+    private boolean drawRequested = true;
+
+    public void requestDraw() {
+        synchronized (drawLock) {
+            drawRequested = true;
+            drawLock.notifyAll();
+        }
+    }
 
     private static final int X_TICKS = 10;
 
@@ -65,6 +75,16 @@ class DrawThread extends Thread {
     @Override
     public void run() {
         while (running) {
+            boolean continuous = functionView != null && functionView.isContinuous();
+            
+            synchronized (drawLock) {
+                while (!drawRequested && !continuous && running) {
+                    try { drawLock.wait(); } catch (InterruptedException ignored) {}
+                }
+                drawRequested = false;
+            }
+            if (!running) break;
+
             Canvas canvas = null;
             try {
                 canvas = holder.lockCanvas();
@@ -73,7 +93,7 @@ class DrawThread extends Thread {
                     if (latest >= 0f) {
                         elapsedTime = latest;
                     } else {
-                        elapsedTime += 1.0f;
+                        elapsedTime += 0.016f;
                     }
                     drawFrame(canvas);
                 }
@@ -82,9 +102,11 @@ class DrawThread extends Thread {
                     holder.unlockCanvasAndPost(canvas);
                 }
             }
-            try {
-                sleep(1000);
-            } catch (InterruptedException ignored) {
+            if (continuous) {
+                try {
+                    sleep(16);
+                } catch (InterruptedException ignored) {
+                }
             }
         }
     }

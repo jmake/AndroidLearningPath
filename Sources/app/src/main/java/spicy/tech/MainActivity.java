@@ -122,6 +122,11 @@ public class MainActivity extends Activity {
     private void PolarConnectionOnCreate() {
         polarConnection = new PolarConnection(this);
         polarConnection.onCreate(textViewBody);
+        
+        polarConnection.getPolarManager().setDrawListener(() -> {
+            spicy.tech.plotter.GraphSurfaceView gv = findViewById(R.id.surface_id);
+            if (gv != null) gv.requestDraw();
+        });
 
         android.widget.Button scanButton = findViewById(R.id.button_scan_id);
         new spicy.tech.polar.PolarScannerUI(this, polarConnection, scanButton);
