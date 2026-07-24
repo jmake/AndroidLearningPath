@@ -84,7 +84,7 @@ public class DataBuffer {
         if (cachedFunctionView == null) {
             cachedFunctionView = new FunctionView(this::getValueAtTime, yMin, yMax, color);
             cachedFunctionView.setTimeProvider(this::getLatestTime);
-            cachedFunctionView.setTimeWindow(name.equals("HR") ? 60.0f : 5.0f);
+            cachedFunctionView.setTimeWindow(60.0f);
         }
         return cachedFunctionView;
     }
