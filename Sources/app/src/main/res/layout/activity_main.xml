@@ -32,14 +32,6 @@
                 android:layout_height="wrap_content"
                 android:text="Scan Devices" 
             />
-
-            <Button
-                android:id="@+id/button_toggle_graph"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="Toggle Graph: Math" 
-            />
         </LinearLayout>
     </LinearLayout>
 
@@ -112,12 +104,28 @@
         android:layout_weight="15"
         android:orientation="vertical">
 
-        <Button
-            android:id="@+id/button_reset"
+        <LinearLayout
+            android:id="@+id/plotter_polar_controller_id"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Reset Graph" 
-        />
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_toggle_graph"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Toggle Graph: Math" 
+            />
+
+            <Button
+                android:id="@+id/button_reset"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Reset Graph" 
+            />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/footer_id"
