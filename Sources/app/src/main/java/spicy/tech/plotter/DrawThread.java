@@ -23,7 +23,6 @@ class DrawThread extends Thread {
     private final Path signalPath;
 
     private float elapsedTime = 0;
-    private float timeWindow = 10.0f;
     boolean running = true;
 
     private static final int X_TICKS = 10;
@@ -50,11 +49,13 @@ class DrawThread extends Thread {
     }
 
     public synchronized void updateTimeWindow(float value) {
-        timeWindow = Math.max(1.0f, Math.min(value, 60.0f));
+        if (functionView != null) {
+            functionView.setTimeWindow(value);
+        }
     }
 
     public synchronized float getTimeWindow() {
-        return timeWindow;
+        return functionView != null ? functionView.getTimeWindow() : 10.0f;
     }
 
     public synchronized void resetTime() {
@@ -72,7 +73,7 @@ class DrawThread extends Thread {
                     if (latest >= 0f) {
                         elapsedTime = latest;
                     } else {
-                        elapsedTime += 0.016f;
+                        elapsedTime += 1.0f;
                     }
                     drawFrame(canvas);
                 }
@@ -82,7 +83,7 @@ class DrawThread extends Thread {
                 }
             }
             try {
-                sleep(16);
+                sleep(1000);
             } catch (InterruptedException ignored) {
             }
         }
@@ -95,7 +96,7 @@ class DrawThread extends Thread {
         float xMin;
         float xMax;
         synchronized (this) {
-            xMin = elapsedTime - timeWindow;
+            xMin = elapsedTime - (functionView != null ? functionView.getTimeWindow() : 10.0f);
             xMax = elapsedTime;
         }
         drawGrid(canvas, width, height);

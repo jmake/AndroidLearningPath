@@ -39,38 +39,35 @@ public class DataBuffer {
     public synchronized float getValueAtTime(float time) {
         if (size == 0) return 0f;
 
-        int currentIndex = head - 1;
-        if (currentIndex < 0) currentIndex = capacity - 1;
-
+        // Binary search for the closest time
+        int low = 0;
+        int high = size - 1;
         float closestTimeDiff = Float.MAX_VALUE;
         float closestValue = 0f;
 
-        // Search recent points for the requested timestamp
-        int searchLimit = Math.min(size, 2000); // Max points to search back
-        
-        for (int i = 0; i < searchLimit; i++) {
-            float t = times[currentIndex];
-            float diff = Math.abs(t - time);
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            int actualIndex = (head - size + mid + capacity) % capacity;
+            float t = times[actualIndex];
             
+            float diff = Math.abs(t - time);
             if (diff < closestTimeDiff) {
                 closestTimeDiff = diff;
-                closestValue = values[currentIndex];
-            } else {
-                // If diff starts growing, we've passed the closest point
-                if (t < time) {
-                    break;
-                }
+                closestValue = values[actualIndex];
             }
             
-            currentIndex--;
-            if (currentIndex < 0) currentIndex = capacity - 1;
+            if (t < time) {
+                low = mid + 1;
+            } else if (t > time) {
+                high = mid - 1;
+            } else {
+                return closestValue;
+            }
         }
-
-        // If the requested time is more than 2 seconds away from any known data point, draw 0.
+        
         if (closestTimeDiff > 2.0f) {
              return 0f;
         }
-
         return closestValue;
     }
 
@@ -81,9 +78,14 @@ public class DataBuffer {
         return times[latestIndex];
     }
 
-    public FunctionView getAsFunctionView() {
-        FunctionView fv = new FunctionView(this::getValueAtTime, yMin, yMax, color);
-        fv.setTimeProvider(this::getLatestTime);
-        return fv;
+    private FunctionView cachedFunctionView = null;
+
+    public synchronized FunctionView getAsFunctionView() {
+        if (cachedFunctionView == null) {
+            cachedFunctionView = new FunctionView(this::getValueAtTime, yMin, yMax, color);
+            cachedFunctionView.setTimeProvider(this::getLatestTime);
+            cachedFunctionView.setTimeWindow(name.equals("HR") ? 60.0f : 5.0f);
+        }
+        return cachedFunctionView;
     }
 }

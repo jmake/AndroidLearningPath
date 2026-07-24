@@ -17,6 +17,7 @@ public class FunctionView {
     private final float yMin;
     private final float yMax;
     private final int color;
+    private float timeWindow = 10.0f;
 
     public FunctionView(Function function, float yMin, float yMax, int color) {
         this.function = function;
@@ -31,6 +32,14 @@ public class FunctionView {
 */
     public void setTimeProvider(TimeProvider provider) {
         this.timeProvider = provider;
+    }
+
+    public float getTimeWindow() {
+        return timeWindow;
+    }
+
+    public void setTimeWindow(float timeWindow) {
+        this.timeWindow = Math.max(1.0f, Math.min(timeWindow, 60.0f));
     }
 
     public float getLatestTime() {

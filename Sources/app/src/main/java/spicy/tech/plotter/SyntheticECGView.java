@@ -7,6 +7,7 @@ public class SyntheticECGView extends FunctionView
     public SyntheticECGView()
     {
         super(createFunction(), -0.3f, 1.1f, Color.BLUE);
+        setTimeWindow(3.0f);
     }
 
     private static Function createFunction()
