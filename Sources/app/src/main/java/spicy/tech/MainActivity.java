@@ -132,9 +132,9 @@ public class MainActivity extends Activity {
         });
 
         android.widget.Button scanButton = findViewById(R.id.polar_scan_id);
-        spicy.tech.polar.PolarScannerUI scannerUI = new spicy.tech.polar.PolarScannerUI(this, polarConnection, scanButton);
+        spicy.tech.ble.DeviceScannerUI scannerUI = new spicy.tech.ble.DeviceScannerUI(this, polarConnection, scanButton);
 
-        polarConnection.setConnectionListener(new spicy.tech.polar.ConnectionListener() {
+        polarConnection.setConnectionListener(new spicy.tech.ble.ConnectionListener() {
             @Override
             public void onDeviceConnected(String deviceName) {
                 scannerUI.onDeviceConnected(deviceName);

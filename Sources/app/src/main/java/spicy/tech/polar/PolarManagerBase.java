@@ -5,6 +5,8 @@ import android.util.Log;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 
+import spicy.tech.ble.ConnectionListener;
+
 import com.polar.sdk.api.PolarBleApi;
 import com.polar.sdk.api.PolarBleApiCallback;
 import com.polar.sdk.api.PolarBleApiDefaultImpl;

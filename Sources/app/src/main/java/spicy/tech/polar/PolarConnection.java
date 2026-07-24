@@ -9,13 +9,17 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import spicy.tech.ble.DeviceConnection;
+import spicy.tech.ble.ConnectionListener;
+import spicy.tech.ble.DeviceInfo;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.polar.sdk.api.errors.PolarInvalidArgument;
 
-public class PolarConnection
+public class PolarConnection implements DeviceConnection
 {
     private static final String TAG = "PolarConnection";
     private static final int PERMISSION_REQUEST_CODE = 1001;
@@ -132,9 +136,11 @@ public class PolarConnection
         }
     }
 
-    public io.reactivex.rxjava3.core.Observable<com.polar.sdk.api.model.PolarDeviceInfo> searchForDevice() {
+    @Override
+    public io.reactivex.rxjava3.core.Observable<DeviceInfo> searchForDevice() {
         initPolarManager();
-        return polarManager.searchForDevice();
+        return polarManager.searchForDevice()
+            .map(device -> new DeviceInfo(device.getDeviceId(), device.getName()));
     }
 
     public void connectToSelectedDevice(String selectedDeviceId) {
